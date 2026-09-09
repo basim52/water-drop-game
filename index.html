@@ -2,14 +2,26 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
   >
+
+  <meta name="theme-color" content="#071827">
 
   <title>قطرة: رحلة العودة 3D</title>
 
   <style>
+    :root {
+      --primary: #4edfff;
+      --primary-dark: #068fbe;
+      --panel: rgba(5, 24, 40, 0.88);
+      --border: rgba(132, 232, 255, 0.32);
+      --danger: #ff665a;
+      --gold: #ffd95a;
+    }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -21,17 +33,21 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      font-family: Tahoma, Arial, sans-serif;
-      background: #071522;
       color: white;
+      background: #06131f;
+      font-family: Tahoma, Arial, sans-serif;
       user-select: none;
+    }
+
+    button {
+      font-family: inherit;
     }
 
     #game {
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(circle at top, #9cecff 0%, #2a87af 45%, #071522 100%);
+        radial-gradient(circle at 50% 0%, #9ceaff, #258db7 46%, #06131f);
     }
 
     #game canvas {
@@ -41,194 +57,187 @@
       touch-action: none;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
+    /* واجهة اللعب */
+
     #hud {
       position: fixed;
-      top: max(12px, env(safe-area-inset-top));
+      top: max(10px, env(safe-area-inset-top));
       left: 50%;
+      z-index: 20;
       transform: translateX(-50%);
-      z-index: 10;
 
-      width: min(760px, calc(100% - 24px));
-      padding: 10px 14px;
-
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-
-      background: rgba(5, 22, 37, 0.72);
-      border: 1px solid rgba(136, 232, 255, 0.35);
-      border-radius: 18px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(12px);
-    }
-
-    .hud-item {
-      min-width: 110px;
-      text-align: center;
-      color: #d9f8ff;
-      font-size: 14px;
-    }
-
-    .hud-item strong {
-      color: #71e8ff;
-      font-size: 17px;
-    }
-
-    #waterBar {
-      width: 100px;
-      height: 8px;
-      margin-top: 5px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.17);
-      border-radius: 20px;
-    }
-
-    #waterFill {
-      width: 60%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #00a9ff, #62efff);
-      transition: width 0.15s, background 0.15s;
-    }
-
-    #message {
-      position: fixed;
-      top: 105px;
-      left: 50%;
-      z-index: 11;
-      transform: translateX(-50%) translateY(-15px);
-
-      max-width: calc(100% - 30px);
-      padding: 9px 18px;
-
-      text-align: center;
-      color: white;
-      background: rgba(4, 22, 36, 0.82);
-      border: 1px solid rgba(117, 230, 255, 0.3);
-      border-radius: 20px;
-
-      opacity: 0;
-      pointer-events: none;
-      transition: 0.25s;
-    }
-
-    #message.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    #overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 30;
+      width: min(930px, calc(100% - 20px));
+      min-height: 66px;
+      padding: 8px 10px;
 
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      gap: 9px;
+      flex-wrap: wrap;
 
-      background:
-        radial-gradient(circle at center, rgba(30, 141, 188, 0.46), rgba(2, 10, 19, 0.93));
-      backdrop-filter: blur(7px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(3, 19, 32, 0.76);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(12px);
     }
 
-    #overlay.hidden {
-      display: none;
+    .hud-item {
+      min-width: 105px;
+      padding: 4px 9px;
+      text-align: center;
+      color: #dff9ff;
+      font-size: 13px;
     }
 
-    .panel {
-      width: min(530px, 100%);
-      padding: 28px;
+    .hud-item strong {
+      display: inline-block;
+      margin-right: 3px;
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    #waterBar {
+      width: 105px;
+      height: 7px;
+      margin: 5px auto 0;
+      overflow: hidden;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #waterFill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #008fff, #58ebff);
+      transition: width 0.15s, background 0.15s;
+    }
+
+    .icon-button {
+      width: 43px;
+      height: 43px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: white;
+      background: rgba(5, 34, 53, 0.76);
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    .icon-button:active {
+      transform: scale(0.92);
+      background: rgba(16, 152, 193, 0.85);
+    }
+
+    #pauseButton {
+      position: fixed;
+      top: max(87px, calc(env(safe-area-inset-top) + 82px));
+      right: 14px;
+      z-index: 22;
+    }
+
+    #soundButton {
+      position: fixed;
+      top: max(87px, calc(env(safe-area-inset-top) + 82px));
+      right: 65px;
+      z-index: 22;
+    }
+
+    #mission {
+      position: fixed;
+      top: max(87px, calc(env(safe-area-inset-top) + 82px));
+      left: 50%;
+      z-index: 19;
+      transform: translateX(-50%);
+
+      width: min(540px, calc(100% - 145px));
+      padding: 8px 14px;
 
       text-align: center;
-      background: rgba(8, 29, 47, 0.9);
-      border: 1px solid rgba(117, 230, 255, 0.35);
-      border-radius: 26px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+      color: #e9fbff;
+      font-size: 13px;
+
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      background: rgba(4, 25, 39, 0.68);
+      backdrop-filter: blur(8px);
     }
 
-    .drop-logo {
-      font-size: 70px;
-      filter: drop-shadow(0 0 20px rgba(62, 215, 255, 0.75));
-      animation: floatLogo 2.2s ease-in-out infinite;
+    #toast {
+      position: fixed;
+      top: 145px;
+      left: 50%;
+      z-index: 40;
+      transform: translate(-50%, -12px);
+
+      max-width: calc(100% - 30px);
+      padding: 10px 18px;
+
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(3, 20, 33, 0.9);
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.28);
+
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.22s;
     }
 
-    @keyframes floatLogo {
-      50% {
-        transform: translateY(-8px) scale(1.04);
-      }
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
     }
 
-    .panel h1 {
-      margin: 8px 0;
-      color: #75e6ff;
-      font-size: clamp(27px, 7vw, 43px);
-    }
+    /* تحكم الجوال */
 
-    .panel p {
-      color: #d4edf4;
-      line-height: 1.8;
-      margin: 12px 0 20px;
-    }
-
-    .main-button {
-      border: 0;
-      min-width: 170px;
-      padding: 13px 24px;
-
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-
-      cursor: pointer;
-      border-radius: 15px;
-      background: linear-gradient(135deg, #008ccc, #36d4ee);
-      box-shadow: 0 10px 30px rgba(0, 183, 235, 0.28);
-    }
-
-    .main-button:active {
-      transform: scale(0.96);
-    }
-
-    #controls {
+    #mobileControls {
       position: fixed;
       right: 0;
-      bottom: max(18px, env(safe-area-inset-bottom));
+      bottom: max(14px, env(safe-area-inset-bottom));
       left: 0;
-      z-index: 20;
+      z-index: 30;
 
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
       padding: 0 18px;
 
+      direction: ltr;
       pointer-events: none;
     }
 
-    .control-group {
-      display: flex;
-      gap: 12px;
-      direction: ltr;
+    #dpad {
+      position: relative;
+      width: 174px;
+      height: 174px;
+      pointer-events: none;
     }
 
     .control-button {
-      width: 68px;
-      height: 68px;
+      position: absolute;
+      width: 58px;
+      height: 58px;
 
       display: grid;
       place-items: center;
 
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 50%;
-      background: rgba(5, 29, 46, 0.64);
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 18px;
       color: white;
-      font-size: 28px;
-      font-weight: bold;
-
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      background: rgba(4, 29, 47, 0.68);
+      box-shadow: 0 9px 22px rgba(0, 0, 0, 0.27);
       backdrop-filter: blur(9px);
+
+      font-size: 26px;
+      font-weight: bold;
 
       pointer-events: auto;
       touch-action: none;
@@ -236,79 +245,333 @@
 
     .control-button.active,
     .control-button:active {
-      background: rgba(32, 190, 232, 0.8);
+      color: #051923;
+      background: rgba(86, 229, 255, 0.92);
       transform: scale(0.92);
     }
 
-    #jumpButton {
-      width: 78px;
-      height: 78px;
-      font-size: 32px;
+    #upButton {
+      top: 0;
+      left: 58px;
     }
 
-    #soundButton {
-      position: fixed;
-      right: 14px;
-      top: 105px;
-      z-index: 15;
+    #leftButton {
+      top: 58px;
+      left: 0;
+    }
 
-      width: 45px;
-      height: 45px;
+    #downButton {
+      top: 116px;
+      left: 58px;
+    }
 
-      border: 1px solid rgba(255, 255, 255, 0.28);
+    #rightButton {
+      top: 58px;
+      left: 116px;
+    }
+
+    #actionButton {
+      position: relative;
+      width: 82px;
+      height: 82px;
+      margin: 0 6px 14px 0;
+
       border-radius: 50%;
-      background: rgba(5, 25, 42, 0.67);
       color: white;
-      font-size: 20px;
+      background:
+        radial-gradient(circle at 35% 28%, #73f0ff, #0788bc 62%, #075879);
+      font-size: 28px;
+    }
+
+    #actionButton::after {
+      content: "تفاعل";
+      position: absolute;
+      right: 0;
+      bottom: -24px;
+      left: 0;
+      color: white;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* الشاشات */
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+
+      overflow-y: auto;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(29, 159, 204, 0.6), rgba(2, 11, 20, 0.95));
+      backdrop-filter: blur(8px);
+    }
+
+    .panel {
+      width: min(600px, 100%);
+      padding: 25px;
+
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 27px;
+      background: var(--panel);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.46);
+    }
+
+    .wide-panel {
+      width: min(850px, 100%);
+    }
+
+    .logo {
+      margin-bottom: 4px;
+      font-size: 68px;
+      filter: drop-shadow(0 0 22px rgba(69, 219, 255, 0.72));
+      animation: logoFloat 2.3s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      50% {
+        transform: translateY(-9px) scale(1.04);
+      }
+    }
+
+    h1,
+    h2 {
+      margin: 7px 0 12px;
+      color: #72e7ff;
+    }
+
+    h1 {
+      font-size: clamp(28px, 7vw, 44px);
+    }
+
+    .description {
+      color: #d4ecf3;
+      line-height: 1.85;
+    }
+
+    .main-button,
+    .secondary-button,
+    .danger-button {
+      min-width: 170px;
+      margin: 6px;
+      padding: 12px 20px;
+
+      border: 0;
+      border-radius: 14px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
     }
 
+    .main-button {
+      background: linear-gradient(135deg, #078fc6, #3ddaf0);
+      box-shadow: 0 10px 26px rgba(0, 184, 235, 0.25);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--border);
+      background: rgba(25, 68, 91, 0.82);
+    }
+
+    .danger-button {
+      background: linear-gradient(135deg, #aa3842, #ff665a);
+    }
+
+    .main-button:active,
+    .secondary-button:active,
+    .danger-button:active {
+      transform: scale(0.96);
+    }
+
+    #levelGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(170px, 1fr));
+      gap: 13px;
+      margin: 20px 0;
+    }
+
+    .level-card {
+      position: relative;
+      min-height: 145px;
+      padding: 15px;
+
+      border: 1px solid rgba(117, 230, 255, 0.25);
+      border-radius: 19px;
+      color: white;
+      background:
+        linear-gradient(145deg, rgba(26, 91, 120, 0.82), rgba(7, 35, 55, 0.92));
+
+      text-align: right;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .level-card::before {
+      content: "";
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      top: -25px;
+      left: -20px;
+      border-radius: 50%;
+      background: rgba(83, 224, 255, 0.13);
+    }
+
+    .level-card:hover:not(.locked) {
+      border-color: #63e6ff;
+      transform: translateY(-2px);
+    }
+
+    .level-card.locked {
+      opacity: 0.48;
+      cursor: not-allowed;
+      filter: grayscale(0.7);
+    }
+
+    .level-number {
+      color: #65e5ff;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .level-name {
+      display: block;
+      margin: 8px 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .level-stars {
+      color: var(--gold);
+      letter-spacing: 2px;
+      direction: ltr;
+    }
+
+    .level-best {
+      display: block;
+      margin-top: 7px;
+      color: #bddbe4;
+      font-size: 12px;
+    }
+
+    #resultStars {
+      margin: 12px 0;
+      color: var(--gold);
+      font-size: 42px;
+      letter-spacing: 8px;
+      direction: ltr;
+    }
+
+    #resultStats {
+      padding: 12px;
+      line-height: 2;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    #interactionHint {
+      position: fixed;
+      left: 50%;
+      bottom: 150px;
+      z-index: 23;
+      transform: translateX(-50%);
+
+      padding: 8px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 18px;
+      background: rgba(4, 23, 37, 0.84);
+      opacity: 0;
+      transition: 0.2s;
+      pointer-events: none;
+    }
+
+    #interactionHint.show {
+      opacity: 1;
+    }
+
     @media (hover: hover) and (pointer: fine) {
-      #controls {
-        opacity: 0.3;
+      #mobileControls {
+        opacity: 0.35;
       }
 
-      #controls:hover {
+      #mobileControls:hover {
         opacity: 1;
       }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
+      #levelGrid {
+        grid-template-columns: repeat(2, minmax(135px, 1fr));
+      }
+
+      .panel {
+        padding: 19px;
+      }
+
       #hud {
-        padding: 8px;
-        gap: 6px;
+        justify-content: space-around;
       }
 
       .hud-item {
-        min-width: 85px;
-        font-size: 12px;
+        min-width: 80px;
+        padding: 2px 5px;
+        font-size: 11px;
       }
 
       .hud-item strong {
-        font-size: 14px;
-      }
-
-      #waterBar {
-        width: 80px;
-      }
-
-      #message {
-        top: 125px;
         font-size: 13px;
       }
 
+      #waterBar {
+        width: 78px;
+      }
+
+      #mission {
+        top: 122px;
+        width: calc(100% - 20px);
+      }
+
+      #pauseButton,
       #soundButton {
-        top: 126px;
+        top: 75px;
       }
 
-      .control-button {
-        width: 60px;
-        height: 60px;
+      #toast {
+        top: 165px;
       }
 
-      #jumpButton {
-        width: 70px;
-        height: 70px;
+      #mobileControls {
+        padding: 0 12px;
+      }
+
+      #dpad {
+        transform: scale(0.86);
+        transform-origin: bottom left;
+      }
+
+      #interactionHint {
+        bottom: 120px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      #levelGrid {
+        grid-template-columns: 1fr;
+      }
+
+      #levelSelectScreen {
+        align-items: flex-start;
+      }
+
+      #levelSelectScreen .panel {
+        margin-top: 10px;
       }
     }
   </style>
@@ -318,101 +581,537 @@
 
   <div id="game"></div>
 
-  <div id="hud">
+  <div id="hud" class="hidden">
     <div class="hud-item">
-      الماء: <strong id="water">60%</strong>
+      الماء:
+      <strong id="waterText">100%</strong>
+
       <div id="waterBar">
         <div id="waterFill"></div>
       </div>
     </div>
 
     <div class="hud-item">
-      النباتات:
-      <strong><span id="plants">0</span>/3</strong>
+      المرحلة:
+      <strong id="levelText">1</strong>
     </div>
 
     <div class="hud-item">
-      الحالة:
-      <strong id="state">سائلة</strong>
+      النقاط:
+      <strong id="scoreText">0</strong>
     </div>
 
     <div class="hud-item">
-      القطرات:
-      <strong id="drops">0</strong>
+      المهمة:
+      <strong id="objectiveText">0/0</strong>
+    </div>
+
+    <div class="hud-item">
+      الوقت:
+      <strong id="timeText">00:00</strong>
     </div>
   </div>
 
-  <button id="soundButton" aria-label="الصوت">🔊</button>
+  <div id="mission" class="hidden"></div>
 
-  <div id="message"></div>
+  <button
+    id="soundButton"
+    class="icon-button hidden"
+    aria-label="الصوت"
+  >🔊</button>
 
-  <div id="controls">
-    <div class="control-group">
-      <button class="control-button" id="leftButton" aria-label="يسار">←</button>
-      <button class="control-button" id="rightButton" aria-label="يمين">→</button>
-    </div>
+  <button
+    id="pauseButton"
+    class="icon-button hidden"
+    aria-label="إيقاف"
+  >⏸</button>
 
-    <button class="control-button" id="jumpButton" aria-label="قفز">↑</button>
+  <div id="toast"></div>
+
+  <div id="interactionHint">
+    اضغط زر التفاعل ⚡
   </div>
 
-  <div id="overlay">
+  <div id="mobileControls" class="hidden">
+    <div id="dpad">
+      <button id="upButton" class="control-button">↑</button>
+      <button id="leftButton" class="control-button">←</button>
+      <button id="downButton" class="control-button">↓</button>
+      <button id="rightButton" class="control-button">→</button>
+    </div>
+
+    <button id="actionButton" class="control-button">⚡</button>
+  </div>
+
+  <!-- الشاشة الرئيسية -->
+
+  <section id="homeScreen" class="screen">
     <div class="panel">
-      <div class="drop-logo">💧</div>
-      <h1 id="overlayTitle">قطرة: رحلة العودة</h1>
+      <div class="logo">💧</div>
 
-      <p id="overlayText">
-        اجمع قطرات الماء، اسقِ النباتات الثلاثة، وتجنب الإسفنج
-        والمواد الكيميائية. استخدم الحرارة والبُرودة للوصول إلى الخزان.
-        <br>
-        <b>الكمبيوتر:</b> الأسهم أو A وD، والقفز بالمسافة.
+      <h1>قطرة: رحلة العودة</h1>
+
+      <p class="description">
+        انطلق في رحلة ثلاثية الأبعاد لإنقاذ الماء والطبيعة.
+        اجمع القطرات، فعّل الصمامات، اسقِ النباتات وتجنب التلوث.
       </p>
 
-      <button class="main-button" id="startButton">ابدأ الرحلة</button>
+      <button id="playButton" class="main-button">
+        اختيار المرحلة
+      </button>
+
+      <button id="continueButton" class="secondary-button">
+        متابعة اللعب
+      </button>
+
+      <p class="description">
+        <b>الكمبيوتر:</b>
+        الأسهم أو WASD — التفاعل E — الإيقاف P
+      </p>
     </div>
-  </div>
+  </section>
+
+  <!-- اختيار المراحل -->
+
+  <section id="levelSelectScreen" class="screen hidden">
+    <div class="panel wide-panel">
+      <h2>خريطة رحلة قطرة</h2>
+
+      <p class="description">
+        احصل على ثلاث نجوم وافتح جميع مناطق الرحلة.
+      </p>
+
+      <div id="levelGrid"></div>
+
+      <button id="backHomeButton" class="secondary-button">
+        العودة للرئيسية
+      </button>
+
+      <button id="resetSaveButton" class="danger-button">
+        حذف التقدم
+      </button>
+    </div>
+  </section>
+
+  <!-- الإيقاف -->
+
+  <section id="pauseScreen" class="screen hidden">
+    <div class="panel">
+      <h2>⏸ اللعبة متوقفة</h2>
+
+      <button id="resumeButton" class="main-button">
+        استكمال
+      </button>
+
+      <button id="restartButton" class="secondary-button">
+        إعادة المرحلة
+      </button>
+
+      <button id="levelsButton" class="secondary-button">
+        اختيار المراحل
+      </button>
+    </div>
+  </section>
+
+  <!-- النتائج -->
+
+  <section id="resultScreen" class="screen hidden">
+    <div class="panel">
+      <h2 id="resultTitle">اكتملت المرحلة!</h2>
+
+      <div id="resultStars">★★★</div>
+
+      <div id="resultStats"></div>
+
+      <button id="nextLevelButton" class="main-button">
+        المرحلة التالية
+      </button>
+
+      <button id="retryButton" class="secondary-button">
+        إعادة المحاولة
+      </button>
+
+      <button id="resultLevelsButton" class="secondary-button">
+        اختيار المراحل
+      </button>
+    </div>
+  </section>
 
   <script type="module">
     import * as THREE from
       "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-    const container = document.getElementById("game");
+    /* ==============================
+       عناصر الواجهة
+    ============================== */
 
-    const waterElement = document.getElementById("water");
-    const waterFill = document.getElementById("waterFill");
-    const plantsElement = document.getElementById("plants");
-    const stateElement = document.getElementById("state");
-    const dropsElement = document.getElementById("drops");
+    const $ = (id) => document.getElementById(id);
 
-    const overlay = document.getElementById("overlay");
-    const overlayTitle = document.getElementById("overlayTitle");
-    const overlayText = document.getElementById("overlayText");
-    const startButton = document.getElementById("startButton");
+    const gameContainer = $("game");
+    const hud = $("hud");
+    const missionElement = $("mission");
+    const mobileControls = $("mobileControls");
+    const interactionHint = $("interactionHint");
 
-    const soundButton = document.getElementById("soundButton");
-    const messageElement = document.getElementById("message");
+    const waterText = $("waterText");
+    const waterFill = $("waterFill");
+    const levelText = $("levelText");
+    const scoreText = $("scoreText");
+    const objectiveText = $("objectiveText");
+    const timeText = $("timeText");
 
-    let started = false;
-    let gameEnded = false;
-    let soundEnabled = true;
-    let audioContext = null;
-    let messageTimer = null;
+    const homeScreen = $("homeScreen");
+    const levelSelectScreen = $("levelSelectScreen");
+    const pauseScreen = $("pauseScreen");
+    const resultScreen = $("resultScreen");
 
-    /* ---------------------------------
-       إنشاء المشهد ثلاثي الأبعاد
-    ---------------------------------- */
+    const soundButton = $("soundButton");
+    const pauseButton = $("pauseButton");
+
+    /* ==============================
+       تعريف المراحل
+    ============================== */
+
+    const levels = [
+      {
+        name: "حديقة البداية",
+        icon: "🌿",
+        sky: 0x83dcf2,
+        fog: 0x83dcf2,
+        ground: 0x559b50,
+        waterDrain: 0.34,
+        targetTime: 75,
+        mission: "اجمع القطرات واسقِ النبتتين ثم ادخل بوابة النهاية.",
+        start: [-8.5, 0.55],
+        goal: [12.7, 3.2],
+        platforms: [
+          [-8, 0, 6, "ground"],
+          [-3.2, 0, 3.2, "ground"],
+          [0.2, 0, 3.4, "ground"],
+          [4, 0, 3.2, "ground"],
+          [8, 0, 3.5, "ground"],
+          [12, 0, 3.6, "ground"],
+          [-5.2, 1.7, 2.5, "normal"],
+          [-1.5, 2.8, 2.7, "normal"],
+          [2.8, 1.9, 2.5, "normal"],
+          [6.4, 3, 2.7, "normal"],
+          [10.1, 1.8, 2.4, "normal"],
+          [12.7, 2.7, 2.4, "normal"]
+        ],
+        drops: [
+          [-7.2, 1],
+          [-5.2, 2.35],
+          [-1.5, 3.45],
+          [2.8, 2.55],
+          [6.4, 3.65],
+          [10.1, 2.45]
+        ],
+        objectives: [
+          [-2.8, 0.65, "plant"],
+          [8.2, 0.65, "plant"]
+        ],
+        hazards: [
+          [1, 0.25, "sponge"]
+        ],
+        enemies: []
+      },
+
+      {
+        name: "مزرعة العطش",
+        icon: "🌾",
+        sky: 0x9fe1ed,
+        fog: 0x9fe1ed,
+        ground: 0x789b43,
+        waterDrain: 0.48,
+        targetTime: 85,
+        mission: "اسقِ النباتات الثلاثة واحذر الإسفنج المتحرك.",
+        start: [-9, 0.55],
+        goal: [13.7, 2.8],
+        platforms: [
+          [-8, 0, 5, "ground"],
+          [-3.8, 0, 2.7, "ground"],
+          [-0.3, 0, 3, "ground"],
+          [3.6, 0, 3.1, "ground"],
+          [7.5, 0, 3, "ground"],
+          [11.5, 0, 4, "ground"],
+          [-6, 2, 2.4, "normal"],
+          [-2.3, 3.1, 2.4, "moving"],
+          [1.7, 1.8, 2.5, "normal"],
+          [5.6, 3.1, 2.4, "moving"],
+          [9.3, 2, 2.7, "normal"],
+          [13, 2.3, 2.8, "normal"]
+        ],
+        drops: [
+          [-8, 1],
+          [-6, 2.65],
+          [-2.3, 3.8],
+          [1.7, 2.5],
+          [5.6, 3.8],
+          [9.3, 2.7],
+          [13, 3]
+        ],
+        objectives: [
+          [-3.8, 0.65, "plant"],
+          [3.7, 0.65, "plant"],
+          [11.2, 0.65, "plant"]
+        ],
+        hazards: [
+          [-0.3, 0.25, "sponge"],
+          [7.5, 0.2, "mud"]
+        ],
+        enemies: [
+          [4.5, 0.6, 2.4]
+        ]
+      },
+
+      {
+        name: "مصنع الأنابيب",
+        icon: "🏭",
+        sky: 0x7794aa,
+        fog: 0x7794aa,
+        ground: 0x58636b,
+        waterDrain: 0.58,
+        targetTime: 95,
+        mission: "فعّل الصمامات الثلاثة لفتح بوابة المصنع.",
+        start: [-9, 0.55],
+        goal: [14, 4],
+        platforms: [
+          [-8, 0, 5, "metal"],
+          [-3, 0, 3, "metal"],
+          [1, 0, 3, "hot"],
+          [5, 0, 3, "metal"],
+          [9, 0, 3, "chemical"],
+          [13, 0, 4, "metal"],
+          [-6, 2, 2.3, "metal"],
+          [-2.5, 3.4, 2.2, "moving"],
+          [1.5, 2.2, 2.4, "hot"],
+          [5.3, 3.7, 2.4, "moving"],
+          [9.3, 2.5, 2.4, "metal"],
+          [13, 3.5, 3, "metal"]
+        ],
+        drops: [
+          [-8, 1],
+          [-6, 2.7],
+          [-2.5, 4.1],
+          [1.5, 2.9],
+          [5.3, 4.4],
+          [9.3, 3.2],
+          [13, 4.2]
+        ],
+        objectives: [
+          [-3, 0.75, "valve"],
+          [5.3, 4.25, "valve"],
+          [12, 0.75, "valve"]
+        ],
+        hazards: [
+          [1, 0.3, "fire"],
+          [9, 0.3, "chemical"]
+        ],
+        enemies: [
+          [3.8, 0.6, 2.2],
+          [11.3, 0.6, 1.8]
+        ]
+      },
+
+      {
+        name: "الصحراء الحارّة",
+        icon: "🏜️",
+        sky: 0xf0bd74,
+        fog: 0xf0bd74,
+        ground: 0xc3924e,
+        waterDrain: 0.95,
+        targetTime: 90,
+        mission: "الحرارة تستنزف الماء سريعًا؛ اجمع كل ما تستطيع.",
+        start: [-9, 0.55],
+        goal: [14.2, 3.7],
+        platforms: [
+          [-8, 0, 5, "sand"],
+          [-3.6, 0, 2.5, "sand"],
+          [0, 0, 2.6, "hot"],
+          [3.8, 0, 2.7, "sand"],
+          [7.5, 0, 2.8, "hot"],
+          [11.7, 0, 5, "sand"],
+          [-6.2, 2.3, 2.2, "sand"],
+          [-2.3, 3.6, 2.3, "moving"],
+          [1.6, 2.2, 2.3, "sand"],
+          [5.4, 3.6, 2.5, "moving"],
+          [9.2, 2.3, 2.5, "sand"],
+          [13.3, 3.2, 3, "sand"]
+        ],
+        drops: [
+          [-8.4, 1],
+          [-6.2, 3],
+          [-2.3, 4.3],
+          [1.6, 2.9],
+          [5.4, 4.3],
+          [9.2, 3],
+          [12, 1],
+          [13.3, 3.9]
+        ],
+        objectives: [
+          [-3.6, 0.65, "plant"],
+          [3.8, 0.65, "plant"],
+          [11.5, 0.65, "plant"]
+        ],
+        hazards: [
+          [0, 0.3, "fire"],
+          [7.5, 0.3, "fire"]
+        ],
+        enemies: [
+          [4, 0.6, 2]
+        ]
+      },
+
+      {
+        name: "الكهف الجليدي",
+        icon: "❄️",
+        sky: 0x9bd9ef,
+        fog: 0x9bd9ef,
+        ground: 0x6dbbd1,
+        waterDrain: 0.45,
+        targetTime: 105,
+        mission: "الأرض زلقة. فعّل بلورات الجليد للوصول إلى المخرج.",
+        start: [-9, 0.55],
+        goal: [14, 4.5],
+        platforms: [
+          [-8, 0, 5, "ice"],
+          [-3.5, 0, 2.7, "ice"],
+          [0.1, 0, 2.7, "ice"],
+          [4, 0, 2.7, "ice"],
+          [8, 0, 2.8, "ice"],
+          [12, 0, 4, "ice"],
+          [-6, 2.1, 2.2, "ice"],
+          [-2.2, 3.6, 2.4, "moving"],
+          [1.7, 2.1, 2.3, "ice"],
+          [5.7, 4, 2.4, "moving"],
+          [9.5, 2.5, 2.3, "ice"],
+          [13.2, 4, 2.7, "ice"]
+        ],
+        drops: [
+          [-8, 1],
+          [-6, 2.8],
+          [-2.2, 4.3],
+          [1.7, 2.8],
+          [5.7, 4.7],
+          [9.5, 3.2],
+          [13.2, 4.7]
+        ],
+        objectives: [
+          [-3.5, 0.75, "crystal"],
+          [5.7, 4.55, "crystal"],
+          [12, 0.75, "crystal"]
+        ],
+        hazards: [
+          [0.1, 0.25, "spikes"],
+          [8, 0.25, "spikes"]
+        ],
+        enemies: [
+          [2.8, 0.6, 2]
+        ]
+      },
+
+      {
+        name: "محطة التنقية",
+        icon: "🌊",
+        sky: 0x59b4d4,
+        fog: 0x59b4d4,
+        ground: 0x39798c,
+        waterDrain: 0.66,
+        targetTime: 120,
+        mission: "المرحلة النهائية: فعّل أجهزة التنقية وتجنب الحراس.",
+        start: [-9, 0.55],
+        goal: [15, 5],
+        platforms: [
+          [-8, 0, 5, "metal"],
+          [-3.5, 0, 2.5, "chemical"],
+          [0, 0, 2.7, "metal"],
+          [4, 0, 2.7, "hot"],
+          [8, 0, 2.8, "chemical"],
+          [12.5, 0, 5, "metal"],
+          [-6.2, 2.4, 2.3, "moving"],
+          [-2.4, 4, 2.3, "metal"],
+          [1.5, 2.5, 2.5, "moving"],
+          [5.5, 4.2, 2.4, "metal"],
+          [9.5, 2.7, 2.5, "moving"],
+          [13.7, 4.5, 3.2, "metal"]
+        ],
+        drops: [
+          [-8.4, 1],
+          [-6.2, 3.1],
+          [-2.4, 4.7],
+          [1.5, 3.2],
+          [5.5, 4.9],
+          [9.5, 3.4],
+          [12, 1],
+          [13.7, 5.2]
+        ],
+        objectives: [
+          [-3.5, 0.8, "filter"],
+          [-2.4, 4.7, "valve"],
+          [5.5, 4.9, "filter"],
+          [12.3, 0.8, "valve"]
+        ],
+        hazards: [
+          [-3.5, 0.3, "chemical"],
+          [4, 0.3, "fire"],
+          [8, 0.3, "chemical"]
+        ],
+        enemies: [
+          [-0.2, 0.6, 2],
+          [6.7, 0.6, 2],
+          [11.5, 0.6, 1.8]
+        ]
+      }
+    ];
+
+    /* ==============================
+       الحفظ
+    ============================== */
+
+    const defaultSave = {
+      unlocked: 1,
+      lastLevel: 0,
+      stars: {},
+      bestScore: {},
+      bestTime: {}
+    };
+
+    let saveData;
+
+    try {
+      saveData = {
+        ...defaultSave,
+        ...JSON.parse(
+          localStorage.getItem("waterDrop3DSave") || "{}"
+        )
+      };
+    } catch {
+      saveData = { ...defaultSave };
+    }
+
+    function saveProgress() {
+      localStorage.setItem(
+        "waterDrop3DSave",
+        JSON.stringify(saveData)
+      );
+    }
+
+    /* ==============================
+       إعداد Three.js
+    ============================== */
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x83daf2);
-    scene.fog = new THREE.Fog(0x83daf2, 17, 34);
+    scene.background = new THREE.Color(0x83dcf2);
+    scene.fog = new THREE.Fog(0x83dcf2, 18, 39);
 
     const camera = new THREE.PerspectiveCamera(
-      50,
+      52,
       innerWidth / innerHeight,
       0.1,
       100
     );
 
-    camera.position.set(-6.5, 5.2, 14);
+    camera.position.set(-7, 5.5, 15);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -425,39 +1124,35 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.08;
 
-    container.appendChild(renderer.domElement);
-
-    /* ---------------------------------
-       الإضاءة
-    ---------------------------------- */
+    gameContainer.appendChild(renderer.domElement);
 
     const hemisphereLight = new THREE.HemisphereLight(
-      0xdaf8ff,
-      0x49653d,
-      2.1
+      0xe5fbff,
+      0x37583b,
+      2.3
     );
+
     scene.add(hemisphereLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffffff, 3.2);
-    sunLight.position.set(-7, 14, 10);
-    sunLight.castShadow = true;
+    const sun = new THREE.DirectionalLight(0xffffff, 3.2);
+    sun.position.set(-8, 15, 10);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -25;
+    sun.shadow.camera.right = 25;
+    sun.shadow.camera.top = 18;
+    sun.shadow.camera.bottom = -10;
+    sun.shadow.bias = -0.0005;
+    scene.add(sun);
 
-    sunLight.shadow.mapSize.set(2048, 2048);
-    sunLight.shadow.camera.left = -18;
-    sunLight.shadow.camera.right = 18;
-    sunLight.shadow.camera.top = 15;
-    sunLight.shadow.camera.bottom = -8;
-    sunLight.shadow.bias = -0.0004;
+    const levelGroup = new THREE.Group();
+    const effectsGroup = new THREE.Group();
 
-    scene.add(sunLight);
+    scene.add(levelGroup, effectsGroup);
 
-    /* ---------------------------------
-       أدوات إنشاء المجسمات
-    ---------------------------------- */
-
-    function material(color, options = {}) {
+    function standardMaterial(color, options = {}) {
       return new THREE.MeshStandardMaterial({
         color,
         roughness: options.roughness ?? 0.7,
@@ -481,210 +1176,34 @@
     ) {
       const mesh = new THREE.Mesh(
         new THREE.BoxGeometry(width, height, depth),
-        material(color, options)
+        standardMaterial(color, options)
       );
 
       mesh.position.set(x, y, z);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
+      levelGroup.add(mesh);
 
-      scene.add(mesh);
       return mesh;
     }
 
-    /* ---------------------------------
-       خلفية ثلاثية الأبعاد
-    ---------------------------------- */
+    /* ==============================
+       اللاعب
+    ============================== */
 
-    const backgroundGround = createBox(
-      48,
-      0.4,
-      16,
-      0x5c9856,
-      2,
-      -1.1,
-      -3
-    );
-
-    backgroundGround.receiveShadow = true;
-
-    const distantGround = createBox(
-      45,
-      1,
-      10,
-      0x78b66a,
-      1,
-      -0.8,
-      -8
-    );
-
-    function createCloud(x, y, z, scale = 1) {
-      const group = new THREE.Group();
-      const cloudMaterial = material(0xffffff, {
-        roughness: 1,
-        transparent: true,
-        opacity: 0.86
-      });
-
-      const cloudPieces = [
-        [-0.7, 0, 0, 0.65],
-        [0, 0.16, 0, 0.9],
-        [0.8, 0, 0, 0.7],
-        [0.25, -0.12, 0.1, 0.75]
-      ];
-
-      cloudPieces.forEach(([px, py, pz, size]) => {
-        const sphere = new THREE.Mesh(
-          new THREE.SphereGeometry(size, 16, 12),
-          cloudMaterial
-        );
-
-        sphere.position.set(px, py, pz);
-        group.add(sphere);
-      });
-
-      group.position.set(x, y, z);
-      group.scale.setScalar(scale);
-      scene.add(group);
-
-      return group;
-    }
-
-    const clouds = [
-      createCloud(-8, 8, -10, 1.2),
-      createCloud(0, 9, -13, 1),
-      createCloud(8, 7.5, -11, 1.35)
-    ];
-
-    /* ---------------------------------
-       بيانات المنصات
-    ---------------------------------- */
-
-    const platformData = [
-      {
-        x: 0,
-        top: 0,
-        width: 19.2,
-        height: 0.7,
-        type: "ground"
-      },
-      {
-        x: -5.7,
-        top: 1.6,
-        width: 3,
-        height: 0.35,
-        type: "normal"
-      },
-      {
-        x: -1.2,
-        top: 3,
-        width: 3.2,
-        height: 0.35,
-        type: "normal"
-      },
-      {
-        x: 3.6,
-        top: 1.4,
-        width: 2.8,
-        height: 0.35,
-        type: "normal"
-      },
-      {
-        x: 7.15,
-        top: 3.7,
-        width: 2.7,
-        height: 0.35,
-        type: "normal"
-      },
-      {
-        x: -0.1,
-        top: 0.5,
-        width: 1.8,
-        height: 0.5,
-        type: "hot"
-      },
-      {
-        x: 5.4,
-        top: 0.5,
-        width: 2,
-        height: 0.5,
-        type: "cold"
-      }
-    ];
-
-    function platformColor(type) {
-      if (type === "hot") return 0xe95c3d;
-      if (type === "cold") return 0x91e8ff;
-      if (type === "ground") return 0x51894b;
-      return 0x629f57;
-    }
-
-    const platforms = platformData.map((data) => {
-      const mesh = createBox(
-        data.width,
-        data.height,
-        2.7,
-        platformColor(data.type),
-        data.x,
-        data.top - data.height / 2,
-        0
-      );
-
-      if (data.type === "normal" || data.type === "ground") {
-        const grass = createBox(
-          data.width,
-          0.12,
-          2.78,
-          0x82c767,
-          data.x,
-          data.top + 0.04,
-          0
-        );
-
-        data.grass = grass;
-      }
-
-      if (data.type === "hot") {
-        mesh.material.emissive.set(0xff2a00);
-        mesh.material.emissiveIntensity = 0.5;
-
-        const hotLight = new THREE.PointLight(0xff5722, 2.5, 5);
-        hotLight.position.set(data.x, 1.1, 1);
-        scene.add(hotLight);
-      }
-
-      if (data.type === "cold") {
-        mesh.material.metalness = 0.15;
-        mesh.material.roughness = 0.2;
-
-        const coldLight = new THREE.PointLight(0x63ddff, 2, 5);
-        coldLight.position.set(data.x, 1.2, 1);
-        scene.add(coldLight);
-      }
-
-      return {
-        ...data,
-        mesh
-      };
-    });
-
-    /* ---------------------------------
-       شخصية القطرة
-    ---------------------------------- */
-
-    function createDropCharacter() {
+    function createPlayer() {
       const group = new THREE.Group();
 
       const waterMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x29c8f0,
-        roughness: 0.12,
-        metalness: 0.05,
+        color: 0x25c8ee,
+        roughness: 0.09,
+        metalness: 0.02,
         transparent: true,
-        opacity: 0.9,
-        transmission: 0.12,
+        opacity: 0.91,
+        transmission: 0.14,
         thickness: 0.8,
         clearcoat: 1,
-        clearcoatRoughness: 0.1
+        clearcoatRoughness: 0.08
       });
 
       const body = new THREE.Mesh(
@@ -692,46 +1211,42 @@
         waterMaterial
       );
 
-      body.scale.set(0.9, 1, 0.9);
+      body.scale.set(0.92, 1, 0.92);
       body.castShadow = true;
       group.add(body);
 
       const top = new THREE.Mesh(
-        new THREE.ConeGeometry(0.29, 0.62, 32),
+        new THREE.ConeGeometry(0.29, 0.64, 32),
         waterMaterial
       );
 
-      top.position.y = 0.45;
+      top.position.y = 0.46;
       top.castShadow = true;
       group.add(top);
 
-      const eyeMaterial = material(0x08283b, {
-        roughness: 0.45
+      const eyeMaterial = standardMaterial(0x062335);
+
+      [-0.14, 0.14].forEach((x) => {
+        const eye = new THREE.Mesh(
+          new THREE.SphereGeometry(0.055, 14, 12),
+          eyeMaterial
+        );
+
+        eye.position.set(x, 0.06, 0.42);
+        group.add(eye);
       });
 
-      const leftEye = new THREE.Mesh(
-        new THREE.SphereGeometry(0.055, 16, 12),
-        eyeMaterial
-      );
-
-      const rightEye = leftEye.clone();
-
-      leftEye.position.set(-0.14, 0.07, 0.42);
-      rightEye.position.set(0.14, 0.07, 0.42);
-
-      group.add(leftEye, rightEye);
-
-      const highlight = new THREE.Mesh(
-        new THREE.SphereGeometry(0.09, 16, 12),
-        material(0xffffff, {
+      const shine = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 14, 10),
+        standardMaterial(0xffffff, {
           transparent: true,
-          opacity: 0.75,
+          opacity: 0.76,
           roughness: 0.1
         })
       );
 
-      highlight.position.set(-0.18, 0.23, 0.34);
-      group.add(highlight);
+      shine.position.set(-0.18, 0.25, 0.34);
+      group.add(shine);
 
       scene.add(group);
 
@@ -739,476 +1254,57 @@
         group,
         body,
         top,
-        waterMaterial
+        material: waterMaterial
       };
     }
 
-    const playerVisual = createDropCharacter();
+    const playerVisual = createPlayer();
 
     const player = {
-      x: -8.1,
-      y: 0.48,
+      x: 0,
+      y: 0,
       vx: 0,
       vy: 0,
-      radius: 0.46,
-      water: 60,
-      state: "سائلة",
-      stateTimer: 0,
+      radius: 0.47,
+      water: 100,
       onGround: false,
-      jumpLocked: false
+      groundType: "normal",
+      invincible: 0,
+      checkpointX: 0,
+      checkpointY: 0
     };
 
-    /* ---------------------------------
-       قطرات الماء
-    ---------------------------------- */
-
-    function createCollectibleDrop(x, y) {
-      const group = new THREE.Group();
-
-      const dropMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x55ddff,
-        roughness: 0.1,
-        transparent: true,
-        opacity: 0.86,
-        transmission: 0.22,
-        clearcoat: 1,
-        emissive: 0x0088bb,
-        emissiveIntensity: 0.18
-      });
-
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(0.2, 24, 18),
-        dropMaterial
-      );
-
-      const cone = new THREE.Mesh(
-        new THREE.ConeGeometry(0.13, 0.3, 24),
-        dropMaterial
-      );
-
-      cone.position.y = 0.2;
-
-      group.add(sphere, cone);
-      group.position.set(x, y, 0);
-      group.traverse((part) => {
-        if (part.isMesh) part.castShadow = true;
-      });
-
-      scene.add(group);
-
-      return {
-        x,
-        y,
-        baseY: y,
-        taken: false,
-        group
-      };
-    }
-
-    const collectibleDrops = [
-      createCollectibleDrop(-5.8, 2.25),
-      createCollectibleDrop(-1.8, 3.72),
-      createCollectibleDrop(3.2, 2.08),
-      createCollectibleDrop(6.8, 4.38)
-    ];
-
-    /* ---------------------------------
-       النباتات
-    ---------------------------------- */
-
-    function createPlant(x) {
-      const group = new THREE.Group();
-
-      const pot = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 0.23, 0.46, 20),
-        material(0xa45e37)
-      );
-
-      pot.position.y = 0.23;
-      pot.castShadow = true;
-      group.add(pot);
-
-      const soil = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.24, 0.06, 20),
-        material(0x493322)
-      );
-
-      soil.position.y = 0.47;
-      group.add(soil);
-
-      const stemMaterial = material(0x8b6a42);
-
-      const stem = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.055, 0.07, 0.67, 12),
-        stemMaterial
-      );
-
-      stem.position.y = 0.78;
-      stem.castShadow = true;
-      group.add(stem);
-
-      const leavesMaterial = material(0x8a6945);
-
-      const leaves = [];
-
-      [
-        [-0.2, 1.04, 0],
-        [0.19, 1.08, 0.03],
-        [0, 1.28, 0]
-      ].forEach(([lx, ly, lz], index) => {
-        const leaf = new THREE.Mesh(
-          new THREE.SphereGeometry(
-            index === 2 ? 0.27 : 0.22,
-            18,
-            14
-          ),
-          leavesMaterial
-        );
-
-        leaf.scale.set(1.2, 0.75, 0.8);
-        leaf.position.set(lx, ly, lz);
-        leaf.castShadow = true;
-
-        group.add(leaf);
-        leaves.push(leaf);
-      });
-
-      group.position.set(x, 0, 0.15);
-      scene.add(group);
-
-      return {
-        x,
-        y: 0.65,
-        watered: false,
-        group,
-        leavesMaterial,
-        leaves
-      };
-    }
-
-    const plants = [
-      createPlant(-3.6),
-      createPlant(1.5),
-      createPlant(8)
-    ];
-
-    function waterPlant(plant) {
-      plant.watered = true;
-      plant.leavesMaterial.color.set(0x35b856);
-      plant.leavesMaterial.roughness = 0.45;
-
-      plant.group.scale.set(1, 1.08, 1);
-      createParticles(plant.x, 0.9, 0x58e4ff, 12);
-
-      playSound(520, 0.13, "sine");
-      showMessage("🌱 أحسنت! تم سقي نبتة");
-    }
-
-    /* ---------------------------------
-       المخاطر
-    ---------------------------------- */
-
-    const hazards = [];
-
-    function createSponge(x) {
-      const sponge = createBox(
-        1.4,
-        0.58,
-        1.55,
-        0xd6a244,
-        x,
-        0.29,
-        0.05
-      );
-
-      for (let i = 0; i < 10; i++) {
-        const hole = new THREE.Mesh(
-          new THREE.SphereGeometry(0.07, 10, 8),
-          material(0x8b641d)
-        );
-
-        hole.position.set(
-          x - 0.55 + Math.random() * 1.1,
-          0.15 + Math.random() * 0.3,
-          0.84
-        );
-
-        scene.add(hole);
-      }
-
-      hazards.push({
-        x,
-        width: 1.4,
-        height: 0.8,
-        type: "sponge",
-        mesh: sponge
-      });
-    }
-
-    function createMud(x) {
-      const mud = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.75, 0.9, 0.18, 28),
-        material(0x745235, {
-          roughness: 1
-        })
-      );
-
-      mud.position.set(x, 0.08, 0.25);
-      mud.scale.z = 0.7;
-      mud.receiveShadow = true;
-      scene.add(mud);
-
-      hazards.push({
-        x,
-        width: 1.5,
-        height: 0.45,
-        type: "dirt",
-        mesh: mud
-      });
-    }
-
-    function createChemicalBarrel(x) {
-      const barrel = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.42, 0.42, 0.72, 24),
-        material(0x783bb3, {
-          metalness: 0.25,
-          roughness: 0.35,
-          emissive: 0x2b0048,
-          emissiveIntensity: 0.25
-        })
-      );
-
-      barrel.rotation.z = Math.PI / 2;
-      barrel.position.set(x, 0.38, 0);
-      barrel.castShadow = true;
-      scene.add(barrel);
-
-      const stripe = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.425, 0.425, 0.13, 24),
-        material(0xb576ee)
-      );
-
-      stripe.rotation.z = Math.PI / 2;
-      stripe.position.copy(barrel.position);
-      scene.add(stripe);
-
-      const chemicalLight = new THREE.PointLight(
-        0xa257ff,
-        1.4,
-        3
-      );
-
-      chemicalLight.position.set(x, 0.9, 0.7);
-      scene.add(chemicalLight);
-
-      hazards.push({
-        x,
-        width: 1.2,
-        height: 0.9,
-        type: "chemical",
-        mesh: barrel
-      });
-    }
-
-    createSponge(-3.35);
-    createMud(1.5);
-    createChemicalBarrel(7.2);
-
-    /* ---------------------------------
-       خزان النهاية
-    ---------------------------------- */
-
-    const goalGroup = new THREE.Group();
-
-    const tankMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0x2698bd,
-      roughness: 0.18,
-      metalness: 0.5,
-      clearcoat: 0.8
-    });
-
-    const tank = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.58, 0.58, 1.6, 32),
-      tankMaterial
-    );
-
-    tank.position.y = 0.8;
-    tank.castShadow = true;
-    goalGroup.add(tank);
-
-    const tankTop = new THREE.Mesh(
-      new THREE.SphereGeometry(0.58, 24, 12),
-      tankMaterial
-    );
-
-    tankTop.scale.y = 0.32;
-    tankTop.position.y = 1.6;
-    goalGroup.add(tankTop);
-
-    const pipe = new THREE.Mesh(
-      new THREE.TorusGeometry(0.34, 0.09, 12, 30, Math.PI),
-      material(0xbcecf4, {
-        metalness: 0.65,
-        roughness: 0.25
-      })
-    );
-
-    pipe.rotation.z = Math.PI / 2;
-    pipe.position.set(-0.44, 0.9, 0);
-    goalGroup.add(pipe);
-
-    const goalLight = new THREE.PointLight(0x45e5ff, 2, 5);
-    goalLight.position.set(0, 1.6, 1);
-    goalGroup.add(goalLight);
-
-    goalGroup.position.set(8.45, 3.7, 0);
-    scene.add(goalGroup);
-
-    /* ---------------------------------
-       الجزيئات
-    ---------------------------------- */
-
-    const particles = [];
-
-    function createParticles(x, y, color = 0x58e5ff, amount = 10) {
-      for (let i = 0; i < amount; i++) {
-        const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.045 + Math.random() * 0.035, 8, 6),
-          new THREE.MeshBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 1
-          })
-        );
-
-        mesh.position.set(x, y, (Math.random() - 0.5) * 0.6);
-        scene.add(mesh);
-
-        particles.push({
-          mesh,
-          vx: (Math.random() - 0.5) * 3,
-          vy: 1.5 + Math.random() * 3,
-          vz: (Math.random() - 0.5) * 2,
-          life: 0.7 + Math.random() * 0.5
-        });
-      }
-    }
-
-    function updateParticles(dt) {
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const particle = particles[i];
-
-        particle.life -= dt;
-        particle.vy -= 5 * dt;
-
-        particle.mesh.position.x += particle.vx * dt;
-        particle.mesh.position.y += particle.vy * dt;
-        particle.mesh.position.z += particle.vz * dt;
-
-        particle.mesh.material.opacity = Math.max(0, particle.life);
-        particle.mesh.scale.setScalar(Math.max(0.1, particle.life));
-
-        if (particle.life <= 0) {
-          scene.remove(particle.mesh);
-          particle.mesh.geometry.dispose();
-          particle.mesh.material.dispose();
-          particles.splice(i, 1);
-        }
-      }
-    }
-
-    /* ---------------------------------
-       التحكم
-    ---------------------------------- */
-
-    const controls = {
-      left: false,
-      right: false,
-      jump: false
-    };
-
-    const blockedKeys = [
-      "arrowleft",
-      "arrowright",
-      "arrowup",
-      " "
-    ];
-
-    addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-
-      if (blockedKeys.includes(key)) {
-        event.preventDefault();
-      }
-
-      if (key === "arrowleft" || key === "a") {
-        controls.left = true;
-      }
-
-      if (key === "arrowright" || key === "d") {
-        controls.right = true;
-      }
-
-      if (
-        key === "arrowup" ||
-        key === "w" ||
-        key === " "
-      ) {
-        controls.jump = true;
-      }
-    });
-
-    addEventListener("keyup", (event) => {
-      const key = event.key.toLowerCase();
-
-      if (key === "arrowleft" || key === "a") {
-        controls.left = false;
-      }
-
-      if (key === "arrowright" || key === "d") {
-        controls.right = false;
-      }
-
-      if (
-        key === "arrowup" ||
-        key === "w" ||
-        key === " "
-      ) {
-        controls.jump = false;
-      }
-    });
-
-    function connectTouchButton(id, controlName) {
-      const button = document.getElementById(id);
-
-      const activate = (event) => {
-        event.preventDefault();
-        button.setPointerCapture?.(event.pointerId);
-        controls[controlName] = true;
-        button.classList.add("active");
-
-        if (!audioContext) initializeAudio();
-      };
-
-      const deactivate = (event) => {
-        event.preventDefault();
-        controls[controlName] = false;
-        button.classList.remove("active");
-      };
-
-      button.addEventListener("pointerdown", activate);
-      button.addEventListener("pointerup", deactivate);
-      button.addEventListener("pointercancel", deactivate);
-      button.addEventListener("lostpointercapture", deactivate);
-    }
-
-    connectTouchButton("leftButton", "left");
-    connectTouchButton("rightButton", "right");
-    connectTouchButton("jumpButton", "jump");
-
-    /* ---------------------------------
+    /* ==============================
+       حالة اللعبة
+    ============================== */
+
+    let currentLevelIndex = 0;
+    let currentLevel = null;
+
+    let platforms = [];
+    let drops = [];
+    let objectives = [];
+    let hazards = [];
+    let enemies = [];
+    let particles = [];
+    let goalObject = null;
+
+    let gameRunning = false;
+    let paused = false;
+    let finished = false;
+
+    let score = 0;
+    let elapsedTime = 0;
+    let collectedDrops = 0;
+    let completedObjectives = 0;
+
+    let toastTimer = null;
+    let audioContext = null;
+    let soundEnabled = true;
+
+    /* ==============================
        الأصوات
-    ---------------------------------- */
+    ============================== */
 
     function initializeAudio() {
       if (!audioContext) {
@@ -1223,11 +1319,7 @@
       }
     }
 
-    function playSound(
-      frequency = 440,
-      duration = 0.12,
-      type = "sine"
-    ) {
+    function playSound(frequency, duration = 0.12, type = "sine") {
       if (!soundEnabled) return;
 
       initializeAudio();
@@ -1242,7 +1334,7 @@
       );
 
       gain.gain.setValueAtTime(
-        0.11,
+        0.1,
         audioContext.currentTime
       );
 
@@ -1258,66 +1350,711 @@
       oscillator.stop(audioContext.currentTime + duration);
     }
 
-    soundButton.addEventListener("click", () => {
-      soundEnabled = !soundEnabled;
-      soundButton.textContent = soundEnabled ? "🔊" : "🔇";
+    function successSound() {
+      playSound(520, 0.13);
 
-      if (soundEnabled) {
-        playSound(500, 0.08);
+      setTimeout(() => {
+        playSound(680, 0.13);
+      }, 120);
+
+      setTimeout(() => {
+        playSound(850, 0.2);
+      }, 240);
+    }
+
+    /* ==============================
+       التحكم
+    ============================== */
+
+    const controls = {
+      left: false,
+      right: false,
+      up: false,
+      down: false,
+      action: false,
+
+      jumpLock: false,
+      actionLock: false
+    };
+
+    const keyMap = {
+      arrowleft: "left",
+      a: "left",
+
+      arrowright: "right",
+      d: "right",
+
+      arrowup: "up",
+      w: "up",
+      " ": "up",
+
+      arrowdown: "down",
+      s: "down",
+
+      e: "action",
+      enter: "action"
+    };
+
+    addEventListener("keydown", (event) => {
+      const key = event.key.toLowerCase();
+
+      if (keyMap[key]) {
+        controls[keyMap[key]] = true;
+        event.preventDefault();
+      }
+
+      if (key === "p" || key === "escape") {
+        if (gameRunning && !finished) {
+          togglePause();
+        }
       }
     });
 
-    /* ---------------------------------
-       رسائل اللعبة
-    ---------------------------------- */
+    addEventListener("keyup", (event) => {
+      const key = event.key.toLowerCase();
 
-    function showMessage(text, duration = 1700) {
-      clearTimeout(messageTimer);
+      if (keyMap[key]) {
+        controls[keyMap[key]] = false;
+      }
+    });
 
-      messageElement.textContent = text;
-      messageElement.classList.add("show");
+    function connectControlButton(id, controlName) {
+      const button = $(id);
 
-      messageTimer = setTimeout(() => {
-        messageElement.classList.remove("show");
-      }, duration);
+      const start = (event) => {
+        event.preventDefault();
+
+        initializeAudio();
+
+        button.setPointerCapture?.(event.pointerId);
+        controls[controlName] = true;
+        button.classList.add("active");
+      };
+
+      const stop = (event) => {
+        event.preventDefault();
+
+        controls[controlName] = false;
+        button.classList.remove("active");
+      };
+
+      button.addEventListener("pointerdown", start);
+      button.addEventListener("pointerup", stop);
+      button.addEventListener("pointercancel", stop);
+      button.addEventListener("lostpointercapture", stop);
     }
 
-    /* ---------------------------------
-       تحديث حالة القطرة
-    ---------------------------------- */
+    connectControlButton("leftButton", "left");
+    connectControlButton("rightButton", "right");
+    connectControlButton("upButton", "up");
+    connectControlButton("downButton", "down");
+    connectControlButton("actionButton", "action");
 
-    function setPlayerState(state, duration) {
-      player.state = state;
-      player.stateTimer = duration;
+    function resetControls() {
+      controls.left = false;
+      controls.right = false;
+      controls.up = false;
+      controls.down = false;
+      controls.action = false;
+      controls.jumpLock = false;
+      controls.actionLock = false;
 
-      if (state === "بخارية") {
-        playerVisual.waterMaterial.color.set(0xe8fbff);
-        playerVisual.waterMaterial.opacity = 0.62;
-        showMessage("🔥 أصبحت بخارًا: الجاذبية أخف");
+      document
+        .querySelectorAll(".control-button")
+        .forEach((button) => button.classList.remove("active"));
+    }
+
+    /* ==============================
+       بناء المرحلة
+    ============================== */
+
+    function clearLevel() {
+      while (levelGroup.children.length) {
+        const object = levelGroup.children.pop();
+
+        object.traverse?.((child) => {
+          if (child.geometry) child.geometry.dispose();
+
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((mat) => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
       }
 
-      if (state === "متجمدة") {
-        playerVisual.waterMaterial.color.set(0xc9fbff);
-        playerVisual.waterMaterial.opacity = 0.96;
-        showMessage("❄️ أصبحت متجمدة: قفزتك أقوى");
+      platforms = [];
+      drops = [];
+      objectives = [];
+      hazards = [];
+      enemies = [];
+      goalObject = null;
+
+      particles.forEach((particle) => {
+        effectsGroup.remove(particle.mesh);
+        particle.mesh.geometry.dispose();
+        particle.mesh.material.dispose();
+      });
+
+      particles = [];
+    }
+
+    function platformColor(type) {
+      const colors = {
+        ground: 0x568e4e,
+        normal: 0x629f57,
+        moving: 0x3f8fb3,
+        metal: 0x647681,
+        hot: 0xe45e3c,
+        chemical: 0x7650a0,
+        sand: 0xc99d59,
+        ice: 0x85d8ed
+      };
+
+      return colors[type] || 0x5f9657;
+    }
+
+    function buildPlatform(data, index) {
+      const [x, top, width, type] = data;
+      const height = type === "ground" ? 0.7 : 0.36;
+
+      const mesh = createBox(
+        width,
+        height,
+        2.65,
+        platformColor(type),
+        x,
+        top - height / 2,
+        0,
+        {
+          roughness: type === "ice" ? 0.18 : 0.72,
+          metalness:
+            type === "metal" || type === "moving" ? 0.38 : 0.03,
+          emissive:
+            type === "hot" ? 0x5f1000 :
+            type === "chemical" ? 0x24003a :
+            0x000000,
+          emissiveIntensity:
+            type === "hot" || type === "chemical" ? 0.45 : 0
+        }
+      );
+
+      if (
+        type === "ground" ||
+        type === "normal" ||
+        type === "sand"
+      ) {
+        const topColor =
+          type === "sand" ? 0xe2bd73 : 0x82c96e;
+
+        createBox(
+          width,
+          0.1,
+          2.72,
+          topColor,
+          x,
+          top + 0.03,
+          0
+        );
+      }
+
+      if (type === "hot") {
+        const light = new THREE.PointLight(0xff5722, 2, 4);
+        light.position.set(x, top + 0.6, 0.7);
+        levelGroup.add(light);
+      }
+
+      if (type === "chemical") {
+        const light = new THREE.PointLight(0xac5cff, 1.8, 4);
+        light.position.set(x, top + 0.6, 0.7);
+        levelGroup.add(light);
+      }
+
+      platforms.push({
+        x,
+        baseX: x,
+        top,
+        width,
+        type,
+        mesh,
+        index,
+        lastX: x,
+        velocityX: 0
+      });
+    }
+
+    function createDrop(x, y, index) {
+      const group = new THREE.Group();
+
+      const dropMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x56ddff,
+        roughness: 0.08,
+        transparent: true,
+        opacity: 0.88,
+        transmission: 0.2,
+        clearcoat: 1,
+        emissive: 0x006b91,
+        emissiveIntensity: 0.25
+      });
+
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.19, 20, 16),
+        dropMaterial
+      );
+
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.12, 0.3, 20),
+        dropMaterial
+      );
+
+      cone.position.y = 0.2;
+      group.add(sphere, cone);
+
+      group.position.set(x, y, 0);
+      group.traverse((part) => {
+        if (part.isMesh) part.castShadow = true;
+      });
+
+      levelGroup.add(group);
+
+      drops.push({
+        x,
+        y,
+        baseY: y,
+        index,
+        taken: false,
+        group
+      });
+    }
+
+    function createObjective(x, y, type, index) {
+      const group = new THREE.Group();
+
+      if (type === "plant") {
+        const pot = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.3, 0.23, 0.46, 18),
+          standardMaterial(0xa15f37)
+        );
+
+        pot.position.y = 0.23;
+        pot.castShadow = true;
+        group.add(pot);
+
+        const stem = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.05, 0.065, 0.65, 10),
+          standardMaterial(0x735336)
+        );
+
+        stem.position.y = 0.76;
+        group.add(stem);
+
+        for (let i = 0; i < 3; i++) {
+          const leaf = new THREE.Mesh(
+            new THREE.SphereGeometry(0.22, 14, 10),
+            standardMaterial(0x806344)
+          );
+
+          leaf.scale.set(1.25, 0.72, 0.8);
+          leaf.position.set(
+            (i - 1) * 0.2,
+            1 + Math.abs(i - 1) * 0.16,
+            0
+          );
+
+          leaf.userData.isLeaf = true;
+          group.add(leaf);
+        }
+      } else {
+        const base = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.34, 0.4, 0.7, 20),
+          standardMaterial(
+            type === "crystal" ? 0x73def5 : 0x667985,
+            {
+              metalness: 0.35,
+              roughness: 0.28
+            }
+          )
+        );
+
+        base.position.y = 0.35;
+        base.castShadow = true;
+        group.add(base);
+
+        let top;
+
+        if (type === "crystal") {
+          top = new THREE.Mesh(
+            new THREE.OctahedronGeometry(0.33),
+            standardMaterial(0xb9f7ff, {
+              emissive: 0x177f99,
+              emissiveIntensity: 0.8,
+              roughness: 0.12
+            })
+          );
+
+          top.position.y = 0.95;
+        } else {
+          top = new THREE.Mesh(
+            new THREE.TorusGeometry(0.32, 0.085, 12, 24),
+            standardMaterial(
+              type === "filter" ? 0x51b9c7 : 0xe75249,
+              {
+                metalness: 0.5,
+                roughness: 0.25
+              }
+            )
+          );
+
+          top.position.y = 0.82;
+          top.rotation.x = Math.PI / 2;
+        }
+
+        top.userData.activePart = true;
+        group.add(top);
+      }
+
+      group.position.set(x, y - 0.5, 0.15);
+      levelGroup.add(group);
+
+      objectives.push({
+        x,
+        y,
+        type,
+        index,
+        active: false,
+        group
+      });
+    }
+
+    function createHazard(x, y, type) {
+      let mesh;
+
+      if (type === "spikes") {
+        const group = new THREE.Group();
+
+        for (let i = -2; i <= 2; i++) {
+          const spike = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 0.55, 10),
+            standardMaterial(0xcceef3, {
+              metalness: 0.5,
+              roughness: 0.2
+            })
+          );
+
+          spike.position.set(i * 0.27, 0.28, 0);
+          spike.castShadow = true;
+          group.add(spike);
+        }
+
+        group.position.set(x, y, 0);
+        levelGroup.add(group);
+        mesh = group;
+      } else {
+        const color =
+          type === "fire" ? 0xff633d :
+          type === "chemical" ? 0x8b4ec0 :
+          type === "sponge" ? 0xd2a145 :
+          0x725439;
+
+        mesh = createBox(
+          1.25,
+          0.45,
+          1.5,
+          color,
+          x,
+          y,
+          0.05,
+          {
+            emissive:
+              type === "fire" ? 0x6c1100 :
+              type === "chemical" ? 0x29003d :
+              0x000000,
+            emissiveIntensity: 0.55
+          }
+        );
+      }
+
+      hazards.push({
+        x,
+        y,
+        type,
+        width: 1.25,
+        mesh,
+        cooldown: 0
+      });
+    }
+
+    function createEnemy(x, y, range, index) {
+      const group = new THREE.Group();
+
+      const bodyMaterial = standardMaterial(0x713ca8, {
+        emissive: 0x22003a,
+        emissiveIntensity: 0.35
+      });
+
+      const body = new THREE.Mesh(
+        new THREE.SphereGeometry(0.42, 20, 16),
+        bodyMaterial
+      );
+
+      body.scale.y = 0.85;
+      body.castShadow = true;
+      group.add(body);
+
+      const eyeMaterial = standardMaterial(0xfff25e, {
+        emissive: 0xff9d00,
+        emissiveIntensity: 1
+      });
+
+      [-0.13, 0.13].forEach((eyeX) => {
+        const eye = new THREE.Mesh(
+          new THREE.SphereGeometry(0.06, 10, 8),
+          eyeMaterial
+        );
+
+        eye.position.set(eyeX, 0.06, 0.39);
+        group.add(eye);
+      });
+
+      group.position.set(x, y, 0);
+      levelGroup.add(group);
+
+      enemies.push({
+        x,
+        baseX: x,
+        y,
+        range,
+        direction: index % 2 ? -1 : 1,
+        speed: 1.1 + index * 0.12,
+        group
+      });
+    }
+
+    function createGoal(x, y) {
+      const group = new THREE.Group();
+
+      const left = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24, 1.8, 0.45),
+        standardMaterial(0x329dbf, {
+          metalness: 0.35,
+          emissive: 0x063f55,
+          emissiveIntensity: 0.4
+        })
+      );
+
+      const right = left.clone();
+
+      left.position.set(-0.65, 0.9, 0);
+      right.position.set(0.65, 0.9, 0);
+
+      const top = new THREE.Mesh(
+        new THREE.BoxGeometry(1.55, 0.24, 0.45),
+        left.material
+      );
+
+      top.position.set(0, 1.72, 0);
+
+      const portal = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.05, 1.4),
+        new THREE.MeshBasicMaterial({
+          color: 0x55e7ff,
+          transparent: true,
+          opacity: 0.54,
+          side: THREE.DoubleSide
+        })
+      );
+
+      portal.position.set(0, 0.88, 0);
+      group.add(left, right, top, portal);
+
+      const light = new THREE.PointLight(0x55e7ff, 2.5, 5);
+      light.position.set(0, 1, 0.8);
+      group.add(light);
+
+      group.position.set(x, y - 0.45, 0);
+      levelGroup.add(group);
+
+      goalObject = {
+        x,
+        y,
+        group,
+        portal
+      };
+    }
+
+    function createBackground(level) {
+      createBox(
+        60,
+        0.5,
+        18,
+        level.ground,
+        3,
+        -1.3,
+        -5
+      );
+
+      for (let i = 0; i < 7; i++) {
+        const mountain = new THREE.Mesh(
+          new THREE.ConeGeometry(
+            2.2 + Math.random() * 2,
+            4 + Math.random() * 3,
+            7
+          ),
+          standardMaterial(level.ground, {
+            roughness: 1
+          })
+        );
+
+        mountain.position.set(
+          -14 + i * 6,
+          0.7,
+          -8 - Math.random() * 4
+        );
+
+        levelGroup.add(mountain);
+      }
+
+      for (let i = 0; i < 5; i++) {
+        const cloud = new THREE.Group();
+
+        for (let part = 0; part < 4; part++) {
+          const sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(
+              0.6 + Math.random() * 0.35,
+              12,
+              9
+            ),
+            standardMaterial(0xffffff, {
+              transparent: true,
+              opacity: 0.55,
+              roughness: 1
+            })
+          );
+
+          sphere.position.set(
+            part * 0.65,
+            Math.sin(part) * 0.15,
+            0
+          );
+
+          cloud.add(sphere);
+        }
+
+        cloud.position.set(
+          -13 + i * 7,
+          7 + Math.random() * 2,
+          -10
+        );
+
+        cloud.userData.cloud = true;
+        levelGroup.add(cloud);
       }
     }
 
-    function restoreLiquidState() {
-      player.state = "سائلة";
-      playerVisual.waterMaterial.color.set(0x29c8f0);
-      playerVisual.waterMaterial.opacity = 0.9;
+    function loadLevel(index) {
+      clearLevel();
+      resetControls();
+
+      currentLevelIndex = index;
+      currentLevel = levels[index];
+
+      saveData.lastLevel = index;
+      saveProgress();
+
+      scene.background.set(currentLevel.sky);
+      scene.fog.color.set(currentLevel.fog);
+
+      createBackground(currentLevel);
+
+      currentLevel.platforms.forEach(buildPlatform);
+
+      currentLevel.drops.forEach((drop, i) => {
+        createDrop(drop[0], drop[1], i);
+      });
+
+      currentLevel.objectives.forEach((objective, i) => {
+        createObjective(
+          objective[0],
+          objective[1],
+          objective[2],
+          i
+        );
+      });
+
+      currentLevel.hazards.forEach((hazard) => {
+        createHazard(hazard[0], hazard[1], hazard[2]);
+      });
+
+      currentLevel.enemies.forEach((enemy, i) => {
+        createEnemy(enemy[0], enemy[1], enemy[2], i);
+      });
+
+      createGoal(
+        currentLevel.goal[0],
+        currentLevel.goal[1]
+      );
+
+      player.x = currentLevel.start[0];
+      player.y = currentLevel.start[1];
+      player.vx = 0;
+      player.vy = 0;
+      player.water = 100;
+      player.radius = 0.47;
+      player.invincible = 0;
+      player.onGround = false;
+
+      player.checkpointX = currentLevel.start[0];
+      player.checkpointY = currentLevel.start[1];
+
+      playerVisual.group.position.set(
+        player.x,
+        player.y,
+        0
+      );
+
+      playerVisual.group.scale.set(1, 1, 1);
+      playerVisual.material.color.set(0x25c8ee);
+      playerVisual.material.opacity = 0.91;
+
+      score = 0;
+      elapsedTime = 0;
+      collectedDrops = 0;
+      completedObjectives = 0;
+
+      paused = false;
+      finished = false;
+      gameRunning = true;
+
+      levelText.textContent = `${index + 1}/${levels.length}`;
+      missionElement.textContent = currentLevel.mission;
+
+      homeScreen.classList.add("hidden");
+      levelSelectScreen.classList.add("hidden");
+      pauseScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+
+      hud.classList.remove("hidden");
+      missionElement.classList.remove("hidden");
+      mobileControls.classList.remove("hidden");
+      pauseButton.classList.remove("hidden");
+      soundButton.classList.remove("hidden");
+
+      updateHUD();
+
+      showToast(
+        `${currentLevel.icon} المرحلة ${index + 1}: ${currentLevel.name}`
+      );
     }
 
-    /* ---------------------------------
-       تحديث اللعبة
-    ---------------------------------- */
+    /* ==============================
+       تحديث اللاعب
+    ============================== */
 
-    function updateGame(dt) {
-      if (!started || gameEnded) return;
-
+    function updatePlayer(dt) {
       const acceleration = 18;
-      const maxSpeed = 5.7;
+      const maxSpeed = 5.8;
 
       if (controls.left) {
         player.vx -= acceleration * dt;
@@ -1327,10 +2064,12 @@
         player.vx += acceleration * dt;
       }
 
+      const onIce = player.groundType === "ice";
+
       if (!controls.left && !controls.right) {
-        player.vx *= Math.pow(0.002, dt);
+        player.vx *= Math.pow(onIce ? 0.3 : 0.008, dt);
       } else {
-        player.vx *= Math.pow(0.16, dt);
+        player.vx *= Math.pow(onIce ? 0.7 : 0.18, dt);
       }
 
       player.vx = THREE.MathUtils.clamp(
@@ -1340,52 +2079,41 @@
       );
 
       if (
-        controls.jump &&
-        !player.jumpLocked &&
+        controls.up &&
+        !controls.jumpLock &&
         player.onGround
       ) {
-        player.vy =
-          player.state === "متجمدة" ? 10.4 : 8.4;
-
+        player.vy = 8.7;
         player.onGround = false;
-        playSound(320, 0.1, "square");
-        createParticles(player.x, player.y - 0.35, 0xffffff, 5);
+
+        playSound(330, 0.09, "square");
+        createParticles(
+          player.x,
+          player.y - 0.38,
+          0xffffff,
+          6
+        );
       }
 
-      player.jumpLocked = controls.jump;
+      controls.jumpLock = controls.up;
 
-      if (player.stateTimer > 0) {
-        player.stateTimer -= dt;
-
-        if (player.state === "بخارية") {
-          player.water -= 2.3 * dt;
-        }
-
-        if (player.stateTimer <= 0) {
-          restoreLiquidState();
-        }
+      if (controls.down && !player.onGround) {
+        player.vy -= 20 * dt;
       }
 
-      const gravity =
-        player.state === "بخارية" ? -6.5 : -19;
+      player.vy -= 19 * dt;
+      player.vy = Math.max(player.vy, -16);
 
-      player.vy += gravity * dt;
-      player.vy = Math.max(player.vy, -15);
-
+      const oldX = player.x;
       const oldY = player.y;
       const oldBottom = oldY - player.radius;
 
       player.x += player.vx * dt;
       player.y += player.vy * dt;
 
-      player.x = THREE.MathUtils.clamp(
-        player.x,
-        -9.2,
-        9.3
-      );
-
       const newBottom = player.y - player.radius;
-      let landingPlatform = null;
+
+      let landed = null;
 
       if (player.vy <= 0) {
         for (const platform of platforms) {
@@ -1395,55 +2123,73 @@
             player.x - player.radius * 0.7 <
               platform.x + platform.width / 2;
 
-          const crossedTop =
-            oldBottom >= platform.top - 0.05 &&
-            newBottom <= platform.top;
+          const crossed =
+            oldBottom >= platform.top - 0.12 &&
+            newBottom <= platform.top + 0.03;
 
-          if (insideX && crossedTop) {
-            if (
-              !landingPlatform ||
-              platform.top > landingPlatform.top
-            ) {
-              landingPlatform = platform;
+          if (insideX && crossed) {
+            if (!landed || platform.top > landed.top) {
+              landed = platform;
             }
           }
         }
       }
 
       player.onGround = false;
+      player.groundType = "normal";
 
-      if (landingPlatform) {
-        player.y = landingPlatform.top + player.radius;
+      if (landed) {
+        player.y = landed.top + player.radius;
         player.vy = 0;
         player.onGround = true;
+        player.groundType = landed.type;
 
-        if (
-          landingPlatform.type === "hot" &&
-          player.state !== "بخارية"
-        ) {
-          setPlayerState("بخارية", 2.4);
+        if (landed.type === "moving") {
+          player.x += landed.velocityX * dt;
         }
 
-        if (
-          landingPlatform.type === "cold" &&
-          player.state !== "متجمدة"
-        ) {
-          setPlayerState("متجمدة", 3.5);
+        if (landed.type === "hot") {
+          player.water -= 5.5 * dt;
+          playerVisual.material.color.set(0xe4f9ff);
+          playerVisual.material.opacity = 0.66;
+        } else if (landed.type === "ice") {
+          playerVisual.material.color.set(0xc7f8ff);
+          playerVisual.material.opacity = 0.94;
+        } else {
+          playerVisual.material.color.set(0x25c8ee);
+          playerVisual.material.opacity = 0.91;
         }
       }
 
-      updateHazards(dt);
-      updateCollectibles();
-      updatePlants();
-      checkGoal();
+      player.x = THREE.MathUtils.clamp(
+        player.x,
+        -11,
+        16.5
+      );
+
+      if (player.invincible > 0) {
+        player.invincible -= dt;
+
+        playerVisual.group.visible =
+          Math.floor(player.invincible * 12) % 2 === 0;
+      } else {
+        playerVisual.group.visible = true;
+      }
+
+      player.water -= currentLevel.waterDrain * dt;
+
+      updateHazardCollisions(dt);
+      updateDropCollisions();
+      updateInteraction();
+      updateGoal();
 
       if (player.water <= 0) {
         player.water = 0;
-        endGame(false, "نفد الماء من القطرة.");
+        loseLevel("نفد ماء القطرة");
       }
 
       if (player.y < -5) {
-        endGame(false, "سقطت القطرة خارج المسار.");
+        damagePlayer(16, oldX < player.x ? -1 : 1, true);
       }
 
       playerVisual.group.position.set(
@@ -1452,17 +2198,9 @@
         0
       );
 
-      const sizeScale = player.radius / 0.46;
-
-      playerVisual.group.scale.set(
-        sizeScale,
-        sizeScale,
-        sizeScale
-      );
-
       const targetRotation =
-        controls.left ? 0.16 :
-        controls.right ? -0.16 : 0;
+        controls.left ? 0.18 :
+        controls.right ? -0.18 : 0;
 
       playerVisual.group.rotation.z = THREE.MathUtils.lerp(
         playerVisual.group.rotation.z,
@@ -1470,38 +2208,58 @@
         Math.min(1, dt * 8)
       );
 
-      updateHUD();
+      const scale = player.radius / 0.47;
+
+      playerVisual.group.scale.set(
+        scale,
+        scale,
+        scale
+      );
     }
 
-    function updateHazards(dt) {
+    function updateHazardCollisions(dt) {
       for (const hazard of hazards) {
-        const closeX =
+        hazard.cooldown = Math.max(
+          0,
+          hazard.cooldown - dt
+        );
+
+        const close =
           Math.abs(player.x - hazard.x) <
-          hazard.width / 2 + player.radius * 0.65;
+            hazard.width / 2 + player.radius * 0.7 &&
+          player.y - player.radius < hazard.y + 0.65 &&
+          player.y + player.radius > hazard.y - 0.25;
 
-        const nearGround =
-          player.y - player.radius < hazard.height;
+        if (!close) continue;
 
-        if (!closeX || !nearGround) continue;
+        if (hazard.type === "mud") {
+          player.vx *= Math.pow(0.012, dt);
+          player.water -= 0.9 * dt;
+        }
 
         if (hazard.type === "sponge") {
-          player.water -= 12 * dt;
-          player.vx *= Math.pow(0.35, dt);
-        }
-
-        if (hazard.type === "dirt") {
-          player.vx *= Math.pow(0.015, dt);
-        }
-
-        if (hazard.type === "chemical") {
-          player.water -= 4.2 * dt;
           player.vx *= Math.pow(0.08, dt);
+          player.water -= 8 * dt;
+        }
+
+        if (
+          hazard.type === "fire" ||
+          hazard.type === "chemical" ||
+          hazard.type === "spikes"
+        ) {
+          if (hazard.cooldown <= 0) {
+            hazard.cooldown = 1;
+            damagePlayer(
+              hazard.type === "fire" ? 13 : 10,
+              player.x < hazard.x ? -1 : 1
+            );
+          }
         }
       }
     }
 
-    function updateCollectibles() {
-      collectibleDrops.forEach((drop) => {
+    function updateDropCollisions() {
+      drops.forEach((drop) => {
         if (drop.taken) return;
 
         const distance = Math.hypot(
@@ -1509,258 +2267,824 @@
           player.y - drop.y
         );
 
-        if (distance < player.radius + 0.38) {
+        if (distance < player.radius + 0.34) {
           drop.taken = true;
           drop.group.visible = false;
 
+          collectedDrops++;
+          score += 100;
+
           player.water = Math.min(
             100,
-            player.water + 18
+            player.water + 14
           );
 
           player.radius = Math.min(
-            0.61,
-            player.radius + 0.035
+            0.58,
+            player.radius + 0.012
           );
 
-          createParticles(drop.x, drop.y, 0x68ecff, 16);
-          playSound(720, 0.13, "sine");
-          showMessage("💧 جمعت قطرة ماء");
+          createParticles(
+            drop.x,
+            drop.y,
+            0x55e5ff,
+            15
+          );
+
+          playSound(760, 0.12);
         }
       });
     }
 
-    function updatePlants() {
-      for (const plant of plants) {
-        if (plant.watered) continue;
+    function nearestObjective() {
+      let nearest = null;
+      let distance = Infinity;
 
-        const distance = Math.hypot(
-          player.x - plant.x,
-          player.y - plant.y
+      objectives.forEach((objective) => {
+        if (objective.active) return;
+
+        const currentDistance = Math.hypot(
+          player.x - objective.x,
+          player.y - objective.y
         );
 
-        if (distance < 1.05 && player.water >= 8) {
-          player.water -= 8;
-          waterPlant(plant);
+        if (currentDistance < distance) {
+          nearest = objective;
+          distance = currentDistance;
         }
-      }
-    }
-
-    function checkGoal() {
-      const allPlantsWatered = plants.every(
-        (plant) => plant.watered
-      );
-
-      const closeToGoal =
-        Math.abs(player.x - 8.45) < 0.85 &&
-        player.y > 3.65;
-
-      if (!closeToGoal) return;
-
-      if (allPlantsWatered) {
-        endGame(true);
-      } else {
-        showMessage("🌱 اسقِ النباتات الثلاثة أولًا");
-      }
-    }
-
-    /* ---------------------------------
-       واجهة البيانات
-    ---------------------------------- */
-
-    function updateHUD() {
-      const waterValue = Math.round(
-        THREE.MathUtils.clamp(player.water, 0, 100)
-      );
-
-      waterElement.textContent = `${waterValue}%`;
-      waterFill.style.width = `${waterValue}%`;
-
-      if (waterValue <= 25) {
-        waterFill.style.background =
-          "linear-gradient(90deg,#ff4f43,#ffab4a)";
-      } else {
-        waterFill.style.background =
-          "linear-gradient(90deg,#00a9ff,#62efff)";
-      }
-
-      plantsElement.textContent =
-        plants.filter((plant) => plant.watered).length;
-
-      dropsElement.textContent =
-        collectibleDrops.filter((drop) => drop.taken).length;
-
-      stateElement.textContent = player.state;
-    }
-
-    /* ---------------------------------
-       الفوز والخسارة
-    ---------------------------------- */
-
-    function endGame(won, reason = "") {
-      if (gameEnded) return;
-
-      gameEnded = true;
-
-      if (won) {
-        playSound(650, 0.18, "sine");
-
-        setTimeout(() => {
-          playSound(820, 0.22, "sine");
-        }, 140);
-
-        createParticles(
-          player.x,
-          player.y,
-          0xffdc55,
-          35
-        );
-
-        overlayTitle.textContent = "🎉 أنقذت الحديقة!";
-        overlayText.innerHTML =
-          `وصلت إلى خزان المياه بعد سقي النباتات الثلاثة.
-           <br>الماء المتبقي:
-           <b>${Math.round(player.water)}%</b>`;
-      } else {
-        playSound(130, 0.4, "sawtooth");
-
-        overlayTitle.textContent = "💧 انتهت الرحلة";
-        overlayText.textContent =
-          reason || "حاول مرة أخرى.";
-      }
-
-      startButton.textContent = "إعادة اللعب";
-
-      setTimeout(() => {
-        overlay.classList.remove("hidden");
-      }, 700);
-    }
-
-    function resetGame() {
-      gameEnded = false;
-
-      player.x = -8.1;
-      player.y = 0.48;
-      player.vx = 0;
-      player.vy = 0;
-      player.radius = 0.46;
-      player.water = 60;
-      player.stateTimer = 0;
-      player.onGround = false;
-      player.jumpLocked = false;
-
-      restoreLiquidState();
-
-      controls.left = false;
-      controls.right = false;
-      controls.jump = false;
-
-      collectibleDrops.forEach((drop) => {
-        drop.taken = false;
-        drop.group.visible = true;
       });
 
-      plants.forEach((plant) => {
-        plant.watered = false;
-        plant.leavesMaterial.color.set(0x8a6945);
-        plant.group.scale.set(1, 1, 1);
-      });
+      return {
+        objective: nearest,
+        distance
+      };
+    }
 
-      playerVisual.group.position.set(
+    function updateInteraction() {
+      const nearest = nearestObjective();
+
+      const canInteract =
+        nearest.objective &&
+        nearest.distance < 1.15;
+
+      interactionHint.classList.toggle(
+        "show",
+        Boolean(canInteract)
+      );
+
+      if (
+        controls.action &&
+        !controls.actionLock &&
+        canInteract
+      ) {
+        activateObjective(nearest.objective);
+      }
+
+      controls.actionLock = controls.action;
+    }
+
+    function activateObjective(objective) {
+      if (objective.active) return;
+
+      if (
+        objective.type === "plant" &&
+        player.water < 10
+      ) {
+        showToast("تحتاج إلى 10% ماء لسقي النبتة");
+        playSound(150, 0.18, "sawtooth");
+        return;
+      }
+
+      objective.active = true;
+      completedObjectives++;
+      score += 350;
+
+      if (objective.type === "plant") {
+        player.water -= 10;
+
+        objective.group.traverse((part) => {
+          if (part.userData.isLeaf) {
+            part.material.color.set(0x35b856);
+          }
+        });
+
+        showToast("🌱 تم سقي النبتة");
+      } else {
+        objective.group.traverse((part) => {
+          if (part.userData.activePart) {
+            part.material.color.set(0x55ff9a);
+            part.material.emissive?.set(0x0b6b37);
+            part.material.emissiveIntensity = 1;
+          }
+        });
+
+        showToast("⚡ تم تشغيل الجهاز");
+      }
+
+      objective.group.scale.set(1.08, 1.08, 1.08);
+
+      createParticles(
+        objective.x,
+        objective.y,
+        0x69ffac,
+        18
+      );
+
+      successSound();
+
+      player.checkpointX = objective.x;
+      player.checkpointY = objective.y + 0.7;
+
+      if (completedObjectives === objectives.length) {
+        showToast("✅ اكتملت المهمة! اتجه إلى البوابة");
+      }
+    }
+
+    function updateGoal() {
+      if (!goalObject) return;
+
+      const close =
+        Math.abs(player.x - goalObject.x) < 0.85 &&
+        Math.abs(player.y - goalObject.y) < 1.35;
+
+      if (!close) return;
+
+      if (completedObjectives < objectives.length) {
+        showToast("أكمل جميع أهداف المرحلة أولًا");
+        return;
+      }
+
+      winLevel();
+    }
+
+    function damagePlayer(amount, direction = -1, falling = false) {
+      if (player.invincible > 0 && !falling) return;
+
+      player.water -= amount;
+      player.invincible = 1.2;
+
+      if (falling) {
+        player.x = player.checkpointX;
+        player.y = player.checkpointY + 0.6;
+        player.vx = 0;
+        player.vy = 0;
+      } else {
+        player.vx = direction * 5;
+        player.vy = 5.5;
+      }
+
+      createParticles(
         player.x,
         player.y,
-        0
+        0xff6b5f,
+        12
       );
 
-      playerVisual.group.scale.set(1, 1, 1);
+      playSound(145, 0.25, "sawtooth");
 
-      updateHUD();
+      if (navigator.vibrate) {
+        navigator.vibrate(80);
+      }
     }
 
-    startButton.addEventListener("click", () => {
-      initializeAudio();
+    /* ==============================
+       الحركة والعناصر
+    ============================== */
 
-      if (gameEnded) {
-        resetGame();
-      }
-
-      started = true;
-      overlay.classList.add("hidden");
-      showMessage("اجمع القطرات واسقِ النباتات 🌱");
-    });
-
-    /* ---------------------------------
-       الحركة البصرية والكاميرا
-    ---------------------------------- */
-
-    function updateVisuals(time, dt) {
+    function updateWorld(dt, time) {
       const seconds = time * 0.001;
 
-      collectibleDrops.forEach((drop, index) => {
+      platforms.forEach((platform) => {
+        if (platform.type !== "moving") {
+          platform.velocityX = 0;
+          return;
+        }
+
+        platform.lastX = platform.x;
+
+        platform.x =
+          platform.baseX +
+          Math.sin(seconds * 1.25 + platform.index) * 1.25;
+
+        platform.velocityX =
+          (platform.x - platform.lastX) /
+          Math.max(dt, 0.001);
+
+        platform.mesh.position.x = platform.x;
+      });
+
+      drops.forEach((drop) => {
         if (drop.taken) return;
 
         drop.group.position.y =
           drop.baseY +
-          Math.sin(seconds * 2.3 + index) * 0.1;
+          Math.sin(seconds * 2.4 + drop.index) * 0.11;
 
-        drop.group.rotation.y += dt * 1.5;
+        drop.group.rotation.y += dt * 1.8;
       });
 
-      clouds.forEach((cloud, index) => {
-        cloud.position.x += dt * (0.06 + index * 0.015);
+      enemies.forEach((enemy) => {
+        enemy.x += enemy.direction * enemy.speed * dt;
 
-        if (cloud.position.x > 14) {
-          cloud.position.x = -14;
+        if (
+          enemy.x > enemy.baseX + enemy.range ||
+          enemy.x < enemy.baseX - enemy.range
+        ) {
+          enemy.direction *= -1;
+        }
+
+        enemy.group.position.x = enemy.x;
+        enemy.group.rotation.y =
+          enemy.direction > 0 ? 0 : Math.PI;
+
+        const hit =
+          Math.hypot(
+            player.x - enemy.x,
+            player.y - enemy.y
+          ) < player.radius + 0.48;
+
+        if (hit) {
+          damagePlayer(
+            11,
+            player.x < enemy.x ? -1 : 1
+          );
         }
       });
 
-      goalGroup.rotation.y =
-        Math.sin(seconds * 0.8) * 0.08;
+      if (goalObject) {
+        goalObject.portal.material.opacity =
+          0.42 + Math.sin(seconds * 3) * 0.16;
+      }
 
-      const cameraTargetX = THREE.MathUtils.clamp(
+      levelGroup.children.forEach((object) => {
+        if (object.userData.cloud) {
+          object.position.x += dt * 0.07;
+
+          if (object.position.x > 20) {
+            object.position.x = -18;
+          }
+        }
+      });
+    }
+
+    /* ==============================
+       الجزيئات
+    ============================== */
+
+    function createParticles(x, y, color, amount = 10) {
+      for (let i = 0; i < amount; i++) {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(
+            0.035 + Math.random() * 0.045,
+            8,
+            6
+          ),
+          new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: 1
+          })
+        );
+
+        mesh.position.set(
+          x,
+          y,
+          (Math.random() - 0.5) * 0.7
+        );
+
+        effectsGroup.add(mesh);
+
+        particles.push({
+          mesh,
+          vx: (Math.random() - 0.5) * 3.8,
+          vy: 1.4 + Math.random() * 3.6,
+          vz: (Math.random() - 0.5) * 2,
+          life: 0.65 + Math.random() * 0.55
+        });
+      }
+    }
+
+    function updateParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+
+        particle.life -= dt;
+        particle.vy -= 5 * dt;
+
+        particle.mesh.position.x += particle.vx * dt;
+        particle.mesh.position.y += particle.vy * dt;
+        particle.mesh.position.z += particle.vz
+                particle.mesh.position.z += particle.vz * dt;
+
+        particle.mesh.material.opacity =
+          Math.max(0, particle.life);
+
+        particle.mesh.scale.setScalar(
+          Math.max(0.1, particle.life)
+        );
+
+        if (particle.life <= 0) {
+          effectsGroup.remove(particle.mesh);
+          particle.mesh.geometry.dispose();
+          particle.mesh.material.dispose();
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    /* ==============================
+       تحديث واجهة اللعب
+    ============================== */
+
+    function formatTime(seconds) {
+      const totalSeconds = Math.max(0, Math.floor(seconds));
+      const minutes = Math.floor(totalSeconds / 60);
+      const remainingSeconds = totalSeconds % 60;
+
+      return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(remainingSeconds).padStart(2, "0")
+      );
+    }
+
+    function updateHUD() {
+      const water = Math.round(
+        THREE.MathUtils.clamp(player.water, 0, 100)
+      );
+
+      waterText.textContent = `${water}%`;
+      waterFill.style.width = `${water}%`;
+
+      if (water <= 25) {
+        waterFill.style.background =
+          "linear-gradient(90deg,#ff4238,#ff9d42)";
+      } else if (water <= 50) {
+        waterFill.style.background =
+          "linear-gradient(90deg,#ffb52e,#f5e85c)";
+      } else {
+        waterFill.style.background =
+          "linear-gradient(90deg,#008fff,#58ebff)";
+      }
+
+      levelText.textContent =
+        `${currentLevelIndex + 1}/${levels.length}`;
+
+      scoreText.textContent = score;
+
+      objectiveText.textContent =
+        `${completedObjectives}/${objectives.length}`;
+
+      timeText.textContent = formatTime(elapsedTime);
+    }
+
+    function showToast(text, duration = 1600) {
+      clearTimeout(toastTimer);
+
+      $("toast").textContent = text;
+      $("toast").classList.add("show");
+
+      toastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+      }, duration);
+    }
+
+    /* ==============================
+       الفوز والخسارة
+    ============================== */
+
+    function calculateStars() {
+      let stars = 1;
+
+      if (elapsedTime <= currentLevel.targetTime) {
+        stars++;
+      }
+
+      if (
+        player.water >= 45 &&
+        collectedDrops >= Math.ceil(drops.length * 0.7)
+      ) {
+        stars++;
+      }
+
+      return THREE.MathUtils.clamp(stars, 1, 3);
+    }
+
+    function winLevel() {
+      if (finished) return;
+
+      finished = true;
+      gameRunning = false;
+
+      const timeBonus = Math.max(
+        0,
+        Math.round(
+          (currentLevel.targetTime - elapsedTime) * 15
+        )
+      );
+
+      const waterBonus = Math.round(player.water * 10);
+      const stars = calculateStars();
+
+      score += timeBonus + waterBonus + stars * 500;
+
+      const levelKey = String(currentLevelIndex);
+
+      saveData.stars[levelKey] = Math.max(
+        saveData.stars[levelKey] || 0,
+        stars
+      );
+
+      saveData.bestScore[levelKey] = Math.max(
+        saveData.bestScore[levelKey] || 0,
+        score
+      );
+
+      const oldBestTime =
+        saveData.bestTime[levelKey] || Infinity;
+
+      saveData.bestTime[levelKey] = Math.min(
+        oldBestTime,
+        elapsedTime
+      );
+
+      if (currentLevelIndex + 1 < levels.length) {
+        saveData.unlocked = Math.max(
+          saveData.unlocked,
+          currentLevelIndex + 2
+        );
+
+        saveData.lastLevel = currentLevelIndex + 1;
+      } else {
+        saveData.lastLevel = currentLevelIndex;
+      }
+
+      saveProgress();
+
+      createParticles(
         player.x,
-        -6.4,
-        6.4
+        player.y,
+        0xffdf55,
+        42
+      );
+
+      successSound();
+
+      if (navigator.vibrate) {
+        navigator.vibrate([70, 50, 120]);
+      }
+
+      setTimeout(() => {
+        showResult(true, stars);
+      }, 650);
+    }
+
+    function loseLevel(reason) {
+      if (finished) return;
+
+      finished = true;
+      gameRunning = false;
+
+      playSound(135, 0.45, "sawtooth");
+
+      if (navigator.vibrate) {
+        navigator.vibrate([120, 60, 120]);
+      }
+
+      setTimeout(() => {
+        showResult(false, 0, reason);
+      }, 450);
+    }
+
+    function showResult(won, stars, reason = "") {
+      hud.classList.add("hidden");
+      missionElement.classList.add("hidden");
+      mobileControls.classList.add("hidden");
+      pauseButton.classList.add("hidden");
+
+      interactionHint.classList.remove("show");
+      resultScreen.classList.remove("hidden");
+
+      if (won) {
+        $("resultTitle").textContent =
+          currentLevelIndex === levels.length - 1
+            ? "🏆 أنقذت عالم المياه!"
+            : "🎉 اكتملت المرحلة!";
+
+        $("resultStars").textContent =
+          "★".repeat(stars) + "☆".repeat(3 - stars);
+
+        $("resultStats").innerHTML = `
+          <b>المرحلة:</b> ${currentLevel.name}<br>
+          <b>النقاط:</b> ${score}<br>
+          <b>الوقت:</b> ${formatTime(elapsedTime)}<br>
+          <b>الماء المتبقي:</b> ${Math.round(player.water)}%<br>
+          <b>القطرات:</b> ${collectedDrops}/${drops.length}
+        `;
+
+        if (currentLevelIndex < levels.length - 1) {
+          $("nextLevelButton").classList.remove("hidden");
+        } else {
+          $("nextLevelButton").classList.add("hidden");
+        }
+      } else {
+        $("resultTitle").textContent = "💧 انتهت المحاولة";
+        $("resultStars").textContent = "☆☆☆";
+
+        $("resultStats").innerHTML = `
+          <b>${reason || "لم تكتمل الرحلة"}</b><br>
+          <b>النقاط:</b> ${score}<br>
+          <b>الوقت:</b> ${formatTime(elapsedTime)}<br>
+          حاول جمع قطرات أكثر وتجنب المخاطر.
+        `;
+
+        $("nextLevelButton").classList.add("hidden");
+      }
+    }
+
+    /* ==============================
+       إيقاف واستكمال اللعبة
+    ============================== */
+
+    function togglePause(forcePause) {
+      if (finished || !currentLevel) return;
+
+      paused =
+        typeof forcePause === "boolean"
+          ? forcePause
+          : !paused;
+
+      resetControls();
+
+      if (paused) {
+        pauseScreen.classList.remove("hidden");
+        mobileControls.classList.add("hidden");
+        interactionHint.classList.remove("show");
+      } else {
+        pauseScreen.classList.add("hidden");
+        mobileControls.classList.remove("hidden");
+      }
+    }
+
+    /* ==============================
+       شاشة اختيار المراحل
+    ============================== */
+
+    function renderLevelGrid() {
+      const grid = $("levelGrid");
+      grid.innerHTML = "";
+
+      levels.forEach((level, index) => {
+        const unlocked = index < saveData.unlocked;
+        const stars = saveData.stars[String(index)] || 0;
+        const bestScore =
+          saveData.bestScore[String(index)] || 0;
+
+        const bestTime =
+          saveData.bestTime[String(index)];
+
+        const card = document.createElement("button");
+
+        card.type = "button";
+        card.className =
+          "level-card" + (unlocked ? "" : " locked");
+
+        card.innerHTML = `
+          <span class="level-number">
+            ${unlocked ? `المرحلة ${index + 1}` : "🔒 مقفلة"}
+          </span>
+
+          <span class="level-name">
+            ${level.icon} ${level.name}
+          </span>
+
+          <span class="level-stars">
+            ${"★".repeat(stars)}${"☆".repeat(3 - stars)}
+          </span>
+
+          <span class="level-best">
+            أفضل نتيجة: ${bestScore}
+            <br>
+            أفضل وقت:
+            ${bestTime ? formatTime(bestTime) : "--:--"}
+          </span>
+        `;
+
+        if (unlocked) {
+          card.addEventListener("click", () => {
+            initializeAudio();
+            loadLevel(index);
+          });
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function hideGameInterface() {
+      hud.classList.add("hidden");
+      missionElement.classList.add("hidden");
+      mobileControls.classList.add("hidden");
+      pauseButton.classList.add("hidden");
+      soundButton.classList.add("hidden");
+      interactionHint.classList.remove("show");
+    }
+
+    function openLevelSelection() {
+      gameRunning = false;
+      paused = false;
+
+      hideGameInterface();
+      resetControls();
+
+      homeScreen.classList.add("hidden");
+      pauseScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+
+      renderLevelGrid();
+      levelSelectScreen.classList.remove("hidden");
+    }
+
+    function openHomeScreen() {
+      gameRunning = false;
+      paused = false;
+
+      hideGameInterface();
+      resetControls();
+
+      levelSelectScreen.classList.add("hidden");
+      pauseScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      homeScreen.classList.remove("hidden");
+    }
+
+    /* ==============================
+       أزرار الواجهة
+    ============================== */
+
+    $("playButton").addEventListener("click", () => {
+      initializeAudio();
+      openLevelSelection();
+    });
+
+    $("continueButton").addEventListener("click", () => {
+      initializeAudio();
+
+      const maximumLevel = Math.max(
+        0,
+        Math.min(saveData.unlocked - 1, levels.length - 1)
+      );
+
+      const savedLevel = Math.max(
+        0,
+        Math.min(
+          saveData.lastLevel || 0,
+          maximumLevel
+        )
+      );
+
+      loadLevel(savedLevel);
+    });
+
+    $("backHomeButton").addEventListener("click", () => {
+      openHomeScreen();
+    });
+
+    $("resetSaveButton").addEventListener("click", () => {
+      const confirmed = confirm(
+        "هل تريد حذف النجوم والمراحل المفتوحة وجميع النتائج؟"
+      );
+
+      if (!confirmed) return;
+
+      saveData = {
+        unlocked: 1,
+        lastLevel: 0,
+        stars: {},
+        bestScore: {},
+        bestTime: {}
+      };
+
+      saveProgress();
+      renderLevelGrid();
+      showToast("تم حذف التقدم");
+    });
+
+    pauseButton.addEventListener("click", () => {
+      togglePause();
+    });
+
+    $("resumeButton").addEventListener("click", () => {
+      togglePause(false);
+    });
+
+    $("restartButton").addEventListener("click", () => {
+      pauseScreen.classList.add("hidden");
+      loadLevel(currentLevelIndex);
+    });
+
+    $("levelsButton").addEventListener("click", () => {
+      openLevelSelection();
+    });
+
+    $("retryButton").addEventListener("click", () => {
+      resultScreen.classList.add("hidden");
+      loadLevel(currentLevelIndex);
+    });
+
+    $("nextLevelButton").addEventListener("click", () => {
+      resultScreen.classList.add("hidden");
+
+      const nextIndex = Math.min(
+        currentLevelIndex + 1,
+        levels.length - 1
+      );
+
+      loadLevel(nextIndex);
+    });
+
+    $("resultLevelsButton").addEventListener("click", () => {
+      openLevelSelection();
+    });
+
+    soundButton.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+
+      soundButton.textContent =
+        soundEnabled ? "🔊" : "🔇";
+
+      if (soundEnabled) {
+        playSound(520, 0.1);
+      }
+    });
+
+    /* إيقاف تلقائي عند مغادرة الصفحة */
+
+    document.addEventListener("visibilitychange", () => {
+      if (
+        document.hidden &&
+        gameRunning &&
+        !finished &&
+        !paused
+      ) {
+        togglePause(true);
+      }
+    });
+
+    /* ==============================
+       تحديث الكاميرا
+    ============================== */
+
+    function updateCamera(dt) {
+      if (!currentLevel) return;
+
+      const targetX = THREE.MathUtils.clamp(
+        player.x,
+        -7,
+        12.5
+      );
+
+      const targetY = THREE.MathUtils.clamp(
+        player.y + 2.7,
+        4.8,
+        7.3
       );
 
       camera.position.x = THREE.MathUtils.lerp(
         camera.position.x,
-        cameraTargetX,
-        Math.min(1, dt * 2.5)
-      );
-
-      const targetY = THREE.MathUtils.clamp(
-        player.y + 2.2,
-        4.4,
-        6.4
+        targetX,
+        Math.min(1, dt * 2.7)
       );
 
       camera.position.y = THREE.MathUtils.lerp(
         camera.position.y,
         targetY,
-        Math.min(1, dt * 2)
+        Math.min(1, dt * 2.3)
       );
 
       camera.lookAt(
-        camera.position.x,
-        camera.position.y - 1.35,
+        camera.position.x + 0.6,
+        camera.position.y - 1.65,
         0
       );
     }
 
-    /* ---------------------------------
+    /* ==============================
        تغيير حجم الشاشة
-    ---------------------------------- */
+    ============================== */
 
-    function resize() {
+    function resizeGame() {
       camera.aspect = innerWidth / innerHeight;
 
       if (innerWidth < 600) {
-        camera.fov = 61;
-        camera.position.z = 15.5;
+        camera.fov = 62;
+        camera.position.z = 16.2;
+      } else if (innerWidth < 950) {
+        camera.fov = 56;
+        camera.position.z = 15.3;
       } else {
-        camera.fov = 50;
-        camera.position.z = 14;
+        camera.fov = 52;
+        camera.position.z = 15;
       }
 
       camera.updateProjectionMatrix();
@@ -1771,34 +3095,60 @@
       );
     }
 
-    addEventListener("resize", resize);
-    resize();
+    addEventListener("resize", resizeGame);
+    resizeGame();
 
-    /* ---------------------------------
-       حلقة التشغيل
-    ---------------------------------- */
+    /* ==============================
+       حلقة تشغيل اللعبة
+    ============================== */
 
     const clock = new THREE.Clock();
 
     function animate(time) {
       requestAnimationFrame(animate);
 
-      const dt = Math.min(clock.getDelta(), 0.033);
+      const dt = Math.min(
+        clock.getDelta(),
+        0.033
+      );
 
-      updateGame(dt);
+      if (
+        gameRunning &&
+        !paused &&
+        !finished &&
+        currentLevel
+      ) {
+        elapsedTime += dt;
+
+        updateWorld(dt, time);
+        updatePlayer(dt);
+        updateHUD();
+      }
+
       updateParticles(dt);
-      updateVisuals(time, dt);
+      updateCamera(dt);
+
+      if (playerVisual.group.visible) {
+        const floatingScale =
+          1 + Math.sin(time * 0.004) * 0.012;
+
+        playerVisual.body.scale.set(
+          0.92 * floatingScale,
+          1 / floatingScale,
+          0.92 * floatingScale
+        );
+      }
 
       renderer.render(scene, camera);
     }
 
-    playerVisual.group.position.set(
-      player.x,
-      player.y,
-      0
-    );
+    /* ==============================
+       بدء العرض
+    ============================== */
 
-    updateHUD();
+    playerVisual.group.position.set(0, 0.5, 0);
+
+    renderLevelGrid();
     requestAnimationFrame(animate);
   </script>
 </body>
