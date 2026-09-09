@@ -1,279 +1,1805 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>قطرة: رحلة العودة</title>
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;background:#101827;color:white;font-family:Arial,sans-serif;
-  display:flex;justify-content:center;align-items:center;min-height:100vh;
-}
-main{width:min(1000px,100%);padding:12px;text-align:center}
-h1{margin:4px 0 8px;color:#75e6ff}
-#info{display:flex;justify-content:space-around;gap:8px;flex-wrap:wrap;
-  background:#1c2940;padding:8px;border-radius:12px;margin-bottom:8px}
-canvas{width:100%;height:auto;background:#a9e4f6;border:3px solid #526b85;
-  border-radius:14px;display:block;touch-action:none}
-p{margin:8px;color:#c8d8e8}
-button{background:#267fa2;color:white;border:0;padding:10px 18px;
-  border-radius:8px;font-size:16px;cursor:pointer}
-</style>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+
+  <title>قطرة: رحلة العودة 3D</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #071522;
+      color: white;
+      user-select: none;
+    }
+
+    #game {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, #9cecff 0%, #2a87af 45%, #071522 100%);
+    }
+
+    #game canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    #hud {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+
+      width: min(760px, calc(100% - 24px));
+      padding: 10px 14px;
+
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      background: rgba(5, 22, 37, 0.72);
+      border: 1px solid rgba(136, 232, 255, 0.35);
+      border-radius: 18px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    .hud-item {
+      min-width: 110px;
+      text-align: center;
+      color: #d9f8ff;
+      font-size: 14px;
+    }
+
+    .hud-item strong {
+      color: #71e8ff;
+      font-size: 17px;
+    }
+
+    #waterBar {
+      width: 100px;
+      height: 8px;
+      margin-top: 5px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.17);
+      border-radius: 20px;
+    }
+
+    #waterFill {
+      width: 60%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #00a9ff, #62efff);
+      transition: width 0.15s, background 0.15s;
+    }
+
+    #message {
+      position: fixed;
+      top: 105px;
+      left: 50%;
+      z-index: 11;
+      transform: translateX(-50%) translateY(-15px);
+
+      max-width: calc(100% - 30px);
+      padding: 9px 18px;
+
+      text-align: center;
+      color: white;
+      background: rgba(4, 22, 36, 0.82);
+      border: 1px solid rgba(117, 230, 255, 0.3);
+      border-radius: 20px;
+
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s;
+    }
+
+    #message.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+
+      background:
+        radial-gradient(circle at center, rgba(30, 141, 188, 0.46), rgba(2, 10, 19, 0.93));
+      backdrop-filter: blur(7px);
+    }
+
+    #overlay.hidden {
+      display: none;
+    }
+
+    .panel {
+      width: min(530px, 100%);
+      padding: 28px;
+
+      text-align: center;
+      background: rgba(8, 29, 47, 0.9);
+      border: 1px solid rgba(117, 230, 255, 0.35);
+      border-radius: 26px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+    }
+
+    .drop-logo {
+      font-size: 70px;
+      filter: drop-shadow(0 0 20px rgba(62, 215, 255, 0.75));
+      animation: floatLogo 2.2s ease-in-out infinite;
+    }
+
+    @keyframes floatLogo {
+      50% {
+        transform: translateY(-8px) scale(1.04);
+      }
+    }
+
+    .panel h1 {
+      margin: 8px 0;
+      color: #75e6ff;
+      font-size: clamp(27px, 7vw, 43px);
+    }
+
+    .panel p {
+      color: #d4edf4;
+      line-height: 1.8;
+      margin: 12px 0 20px;
+    }
+
+    .main-button {
+      border: 0;
+      min-width: 170px;
+      padding: 13px 24px;
+
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+
+      cursor: pointer;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #008ccc, #36d4ee);
+      box-shadow: 0 10px 30px rgba(0, 183, 235, 0.28);
+    }
+
+    .main-button:active {
+      transform: scale(0.96);
+    }
+
+    #controls {
+      position: fixed;
+      right: 0;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      left: 0;
+      z-index: 20;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 18px;
+
+      pointer-events: none;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 12px;
+      direction: ltr;
+    }
+
+    .control-button {
+      width: 68px;
+      height: 68px;
+
+      display: grid;
+      place-items: center;
+
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      background: rgba(5, 29, 46, 0.64);
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(9px);
+
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    .control-button.active,
+    .control-button:active {
+      background: rgba(32, 190, 232, 0.8);
+      transform: scale(0.92);
+    }
+
+    #jumpButton {
+      width: 78px;
+      height: 78px;
+      font-size: 32px;
+    }
+
+    #soundButton {
+      position: fixed;
+      right: 14px;
+      top: 105px;
+      z-index: 15;
+
+      width: 45px;
+      height: 45px;
+
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 50%;
+      background: rgba(5, 25, 42, 0.67);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      #controls {
+        opacity: 0.3;
+      }
+
+      #controls:hover {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #hud {
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .hud-item {
+        min-width: 85px;
+        font-size: 12px;
+      }
+
+      .hud-item strong {
+        font-size: 14px;
+      }
+
+      #waterBar {
+        width: 80px;
+      }
+
+      #message {
+        top: 125px;
+        font-size: 13px;
+      }
+
+      #soundButton {
+        top: 126px;
+      }
+
+      .control-button {
+        width: 60px;
+        height: 60px;
+      }
+
+      #jumpButton {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<main>
-<h1>💧 قطرة: رحلة العودة</h1>
-<div id="info">
-  <span>الماء: <b id="water">60</b>%</span>
-  <span>النباتات: <b id="plants">0</b>/3</span>
-  <span>الحالة: <b id="state">سائلة</b></span>
-  <span>التحكم: ← → أو A D — القفز Space</span>
-</div>
-<canvas id="game" width="960" height="540"></canvas>
-<p>اجمع القطرات، اسقِ النباتات، وتجنب الإسفنج والحرارة للوصول إلى الخزان.</p>
-<button onclick="location.reload()">إعادة اللعب</button>
-</main>
 
-<script>
-const c=document.getElementById("game"),ctx=c.getContext("2d");
-const W=c.width,H=c.height;
-const keys={};
-addEventListener("keydown",e=>{
-  keys[e.key.toLowerCase()]=true;
-  if([" ","arrowleft","arrowright","arrowup"].includes(e.key.toLowerCase()))
-    e.preventDefault();
-});
-addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+  <div id="game"></div>
 
-const player={
- x:70,y:420,vx:0,vy:0,r:23,water:60,
- onGround:false,state:"سائلة",jumpLock:false
-};
+  <div id="hud">
+    <div class="hud-item">
+      الماء: <strong id="water">60%</strong>
+      <div id="waterBar">
+        <div id="waterFill"></div>
+      </div>
+    </div>
 
-const platforms=[
- {x:0,y:500,w:960,h:40,type:"ground"},
- {x:120,y:420,w:150,h:18},
- {x:340,y:350,w:160,h:18},
- {x:590,y:430,w:140,h:18},
- {x:770,y:315,w:135,h:18},
- {x:430,y:475,w:90,h:25,type:"hot"},
- {x:700,y:475,w:100,h:25,type:"cold"}
-];
+    <div class="hud-item">
+      النباتات:
+      <strong><span id="plants">0</span>/3</strong>
+    </div>
 
-const drops=[
- {x:190,y:385,taken:false},{x:390,y:315,taken:false},
- {x:640,y:395,taken:false},{x:820,y:280,taken:false}
-];
+    <div class="hud-item">
+      الحالة:
+      <strong id="state">سائلة</strong>
+    </div>
 
-const plants=[
- {x:300,y:476,watered:false},
- {x:555,y:476,watered:false},
- {x:880,y:476,watered:false}
-];
+    <div class="hud-item">
+      القطرات:
+      <strong id="drops">0</strong>
+    </div>
+  </div>
 
-const hazards=[
- {x:275,y:465,w:75,h:35,type:"sponge"},
- {x:520,y:465,w:70,h:35,type:"dirt"},
- {x:800,y:465,w:80,h:35,type:"chemical"}
-];
+  <button id="soundButton" aria-label="الصوت">🔊</button>
 
-const goal={x:900,y:230,w:45,h:85};
-let won=false,dead=false,last=0;
+  <div id="message"></div>
 
-function rectHit(a,b){
- return a.x+a.w>b.x && a.x<b.x+b.w &&
-        a.y+a.h>b.y && a.y<b.y+b.h;
-}
-function playerBox(){
- return {x:player.x-player.r,y:player.y-player.r,
-         w:player.r*2,h:player.r*2};
-}
-function reset(){
- player.x=70;player.y=420;player.vx=0;player.vy=0;
- player.water=60;player.state="سائلة";won=false;dead=false;
- plants.forEach(p=>p.watered=false);
- drops.forEach(d=>d.taken=false);
-}
+  <div id="controls">
+    <div class="control-group">
+      <button class="control-button" id="leftButton" aria-label="يسار">←</button>
+      <button class="control-button" id="rightButton" aria-label="يمين">→</button>
+    </div>
 
-function update(dt){
- if(won||dead)return;
+    <button class="control-button" id="jumpButton" aria-label="قفز">↑</button>
+  </div>
 
- let left=keys["arrowleft"]||keys["a"];
- let right=keys["arrowright"]||keys["d"];
- let jump=keys[" "]||keys["arrowup"]||keys["w"];
+  <div id="overlay">
+    <div class="panel">
+      <div class="drop-logo">💧</div>
+      <h1 id="overlayTitle">قطرة: رحلة العودة</h1>
 
- if(left)player.vx-=0.55;
- if(right)player.vx+=0.55;
- player.vx*=0.88;
- player.vx=Math.max(-6,Math.min(6,player.vx));
+      <p id="overlayText">
+        اجمع قطرات الماء، اسقِ النباتات الثلاثة، وتجنب الإسفنج
+        والمواد الكيميائية. استخدم الحرارة والبُرودة للوصول إلى الخزان.
+        <br>
+        <b>الكمبيوتر:</b> الأسهم أو A وD، والقفز بالمسافة.
+      </p>
 
- if(jump&&!player.jumpLock&&player.onGround){
-   player.vy=player.state==="متجمدة"?-13:-11;
-   player.onGround=false;
- }
- player.jumpLock=jump;
+      <button class="main-button" id="startButton">ابدأ الرحلة</button>
+    </div>
+  </div>
 
- let gravity=player.state==="بخارية"?0.12:0.55;
- player.vy+=gravity;
- player.vy=Math.min(player.vy,14);
+  <script type="module">
+    import * as THREE from
+      "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
- let oldY=player.y;
- player.x+=player.vx;
- player.y+=player.vy;
- player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+    const container = document.getElementById("game");
 
- player.onGround=false;
+    const waterElement = document.getElementById("water");
+    const waterFill = document.getElementById("waterFill");
+    const plantsElement = document.getElementById("plants");
+    const stateElement = document.getElementById("state");
+    const dropsElement = document.getElementById("drops");
 
- for(const p of platforms){
-   const box=playerBox();
-   if(rectHit(box,p) && player.vy>=0 && oldY+player.r<=p.y+8){
-     player.y=p.y-player.r;
-     player.vy=0;
-     player.onGround=true;
-   }
- }
+    const overlay = document.getElementById("overlay");
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlayText = document.getElementById("overlayText");
+    const startButton = document.getElementById("startButton");
 
- if(player.y>H+80){dead=true;return}
+    const soundButton = document.getElementById("soundButton");
+    const messageElement = document.getElementById("message");
 
- player.state="سائلة";
+    let started = false;
+    let gameEnded = false;
+    let soundEnabled = true;
+    let audioContext = null;
+    let messageTimer = null;
 
- for(const p of platforms){
-   if(p.type==="hot" &&
-      player.x>p.x-player.r&&player.x<p.x+p.w+player.r &&
-      player.y+player.r>p.y){
-     player.state="بخارية";
-     player.water-=0.10*dt;
-   }
-   if(p.type==="cold" &&
-      player.x>p.x-player.r&&player.x<p.x+p.w+player.r &&
-      player.y+player.r>p.y){
-     player.state="متجمدة";
-   }
- }
+    /* ---------------------------------
+       إنشاء المشهد ثلاثي الأبعاد
+    ---------------------------------- */
 
- for(const h of hazards){
-   if(rectHit(playerBox(),h)){
-     if(h.type==="sponge")player.water-=0.35*dt;
-     if(h.type==="chemical"){player.vx*=0.92;player.water-=0.04*dt}
-     if(h.type==="dirt"){player.vx*=0.96}
-   }
- }
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x83daf2);
+    scene.fog = new THREE.Fog(0x83daf2, 17, 34);
 
- for(const d of drops){
-   if(!d.taken && Math.hypot(player.x-d.x,player.y-d.y)<player.r+12){
-     d.taken=true;
-     player.water=Math.min(100,player.water+18);
-     player.r=Math.min(32,player.r+2);
-   }
- }
+    const camera = new THREE.PerspectiveCamera(
+      50,
+      innerWidth / innerHeight,
+      0.1,
+      100
+    );
 
- for(const p of plants){
-   if(!p.watered && Math.hypot(player.x-p.x,player.y-p.y)<48 && player.water>8){
-     p.watered=true;
-     player.water-=8;
-   }
- }
+    camera.position.set(-6.5, 5.2, 14);
 
- if(player.water<=0){dead=true;player.water=0}
- if(player.x>goal.x-20&&player.y<goal.y+goal.h&&
-    plants.every(p=>p.watered)) won=true;
-}
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance"
+    });
 
-function draw(){
- ctx.clearRect(0,0,W,H);
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
 
- // السماء
- let sky=ctx.createLinearGradient(0,0,0,H);
- sky.addColorStop(0,"#83d8f2");sky.addColorStop(1,"#d7f6de");
- ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    container.appendChild(renderer.domElement);
 
- // سحب
- ctx.fillStyle="rgba(255,255,255,.65)";
- [[120,70],[450,95],[760,55]].forEach(([x,y])=>{
-   ctx.beginPath();ctx.arc(x,y,25,0,Math.PI*2);
-   ctx.arc(x+28,y+5,32,0,Math.PI*2);
-   ctx.arc(x+62,y,22,0,Math.PI*2);ctx.fill();
- });
+    /* ---------------------------------
+       الإضاءة
+    ---------------------------------- */
 
- // المنصات
- for(const p of platforms){
-   ctx.fillStyle=p.type==="hot"?"#ef684d":
-                p.type==="cold"?"#8bdcf7":
-                "#5b9b57";
-   ctx.fillRect(p.x,p.y,p.w,p.h);
-   if(p.type==="hot"){
-     ctx.fillStyle="#ffb13b";
-     for(let x=p.x+10;x<p.x+p.w;x+=22)ctx.fillText("🔥",x,p.y-4);
-   }
-   if(p.type==="cold"){
-     ctx.fillStyle="#eaffff";
-     for(let x=p.x+10;x<p.x+p.w;x+=25)ctx.fillText("❄",x,p.y+18);
-   }
- }
+    const hemisphereLight = new THREE.HemisphereLight(
+      0xdaf8ff,
+      0x49653d,
+      2.1
+    );
+    scene.add(hemisphereLight);
 
- // المخاطر
- for(const h of hazards){
-   ctx.fillStyle=h.type==="sponge"?"#d493bd":
-                h.type==="chemical"?"#8d55c7":"#806447";
-   ctx.fillRect(h.x,h.y,h.w,h.h);
-   ctx.fillStyle="white";
-   ctx.font="20px Arial";
-   ctx.fillText(h.type==="sponge"?"🧽":h.type==="chemical"?"☣":"●",
-                h.x+22,h.y+25);
- }
+    const sunLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    sunLight.position.set(-7, 14, 10);
+    sunLight.castShadow = true;
 
- // القطرات
- for(const d of drops)if(!d.taken){
-   ctx.fillStyle="#65e5ff";ctx.beginPath();
-   ctx.arc(d.x,d.y,11,0,Math.PI*2);ctx.fill();
-   ctx.strokeStyle="white";ctx.stroke();
- }
+    sunLight.shadow.mapSize.set(2048, 2048);
+    sunLight.shadow.camera.left = -18;
+    sunLight.shadow.camera.right = 18;
+    sunLight.shadow.camera.top = 15;
+    sunLight.shadow.camera.bottom = -8;
+    sunLight.shadow.bias = -0.0004;
 
- // النباتات
- for(const p of plants){
-   ctx.font="30px Arial";
-   ctx.fillText(p.watered?"🌳":"🥀",p.x-15,p.y+5);
- }
+    scene.add(sunLight);
 
- // الهدف
- ctx.fillStyle="#247b9d";ctx.fillRect(goal.x,goal.y,goal.w,goal.h);
- ctx.fillStyle="#d8f7ff";ctx.font="25px Arial";ctx.fillText("🚰",goal.x+7,goal.y+30);
+    /* ---------------------------------
+       أدوات إنشاء المجسمات
+    ---------------------------------- */
 
- // القطرة
- ctx.save();
- ctx.translate(player.x,player.y);
- let sx=1,sy=1;
- if(player.state==="بخارية"){sx=1.25;sy=.75}
- if(player.state==="متجمدة"){sx=1.05;sy=1.05}
- ctx.scale(sx,sy);
- ctx.fillStyle=player.state==="متجمدة"?"#d7ffff":
-              player.state==="بخارية"?"rgba(255,255,255,.72)":"#39c9ed";
- ctx.beginPath();ctx.arc(0,0,player.r,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();
- ctx.fillStyle="#123";ctx.beginPath();ctx.arc(-7,-4,3,0,7);ctx.arc(7,-4,3,0,7);ctx.fill();
- ctx.restore();
+    function material(color, options = {}) {
+      return new THREE.MeshStandardMaterial({
+        color,
+        roughness: options.roughness ?? 0.7,
+        metalness: options.metalness ?? 0,
+        transparent: options.transparent ?? false,
+        opacity: options.opacity ?? 1,
+        emissive: options.emissive ?? 0x000000,
+        emissiveIntensity: options.emissiveIntensity ?? 0
+      });
+    }
 
- if(won||dead){
-   ctx.fillStyle="rgba(8,18,35,.78)";ctx.fillRect(0,0,W,H);
-   ctx.textAlign="center";
-   ctx.fillStyle="white";ctx.font="bold 38px Arial";
-   ctx.fillText(won?"🎉 أنقذت الحديقة!":"💧 نفد الماء",W/2,230);
-   ctx.font="22px Arial";
-   ctx.fillText(won?"وصلت إلى مصدر المياه الرئيسي":"اضغط زر إعادة اللعب للمحاولة مجددًا",
-                W/2,275);
-   ctx.textAlign="start";
- }
- document.getElementById("water").textContent=Math.round(player.water);
- document.getElementById("plants").textContent=plants.filter(p=>p.watered).length;
- document.getElementById("state").textContent=player.state;
-}
+    function createBox(
+      width,
+      height,
+      depth,
+      color,
+      x,
+      y,
+      z = 0,
+      options = {}
+    ) {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, depth),
+        material(color, options)
+      );
 
-function loop(t){
- let dt=Math.min(2,(t-last)/16.67||1);last=t;
- update(dt);draw();requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-</script>
+      mesh.position.set(x, y, z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      scene.add(mesh);
+      return mesh;
+    }
+
+    /* ---------------------------------
+       خلفية ثلاثية الأبعاد
+    ---------------------------------- */
+
+    const backgroundGround = createBox(
+      48,
+      0.4,
+      16,
+      0x5c9856,
+      2,
+      -1.1,
+      -3
+    );
+
+    backgroundGround.receiveShadow = true;
+
+    const distantGround = createBox(
+      45,
+      1,
+      10,
+      0x78b66a,
+      1,
+      -0.8,
+      -8
+    );
+
+    function createCloud(x, y, z, scale = 1) {
+      const group = new THREE.Group();
+      const cloudMaterial = material(0xffffff, {
+        roughness: 1,
+        transparent: true,
+        opacity: 0.86
+      });
+
+      const cloudPieces = [
+        [-0.7, 0, 0, 0.65],
+        [0, 0.16, 0, 0.9],
+        [0.8, 0, 0, 0.7],
+        [0.25, -0.12, 0.1, 0.75]
+      ];
+
+      cloudPieces.forEach(([px, py, pz, size]) => {
+        const sphere = new THREE.Mesh(
+          new THREE.SphereGeometry(size, 16, 12),
+          cloudMaterial
+        );
+
+        sphere.position.set(px, py, pz);
+        group.add(sphere);
+      });
+
+      group.position.set(x, y, z);
+      group.scale.setScalar(scale);
+      scene.add(group);
+
+      return group;
+    }
+
+    const clouds = [
+      createCloud(-8, 8, -10, 1.2),
+      createCloud(0, 9, -13, 1),
+      createCloud(8, 7.5, -11, 1.35)
+    ];
+
+    /* ---------------------------------
+       بيانات المنصات
+    ---------------------------------- */
+
+    const platformData = [
+      {
+        x: 0,
+        top: 0,
+        width: 19.2,
+        height: 0.7,
+        type: "ground"
+      },
+      {
+        x: -5.7,
+        top: 1.6,
+        width: 3,
+        height: 0.35,
+        type: "normal"
+      },
+      {
+        x: -1.2,
+        top: 3,
+        width: 3.2,
+        height: 0.35,
+        type: "normal"
+      },
+      {
+        x: 3.6,
+        top: 1.4,
+        width: 2.8,
+        height: 0.35,
+        type: "normal"
+      },
+      {
+        x: 7.15,
+        top: 3.7,
+        width: 2.7,
+        height: 0.35,
+        type: "normal"
+      },
+      {
+        x: -0.1,
+        top: 0.5,
+        width: 1.8,
+        height: 0.5,
+        type: "hot"
+      },
+      {
+        x: 5.4,
+        top: 0.5,
+        width: 2,
+        height: 0.5,
+        type: "cold"
+      }
+    ];
+
+    function platformColor(type) {
+      if (type === "hot") return 0xe95c3d;
+      if (type === "cold") return 0x91e8ff;
+      if (type === "ground") return 0x51894b;
+      return 0x629f57;
+    }
+
+    const platforms = platformData.map((data) => {
+      const mesh = createBox(
+        data.width,
+        data.height,
+        2.7,
+        platformColor(data.type),
+        data.x,
+        data.top - data.height / 2,
+        0
+      );
+
+      if (data.type === "normal" || data.type === "ground") {
+        const grass = createBox(
+          data.width,
+          0.12,
+          2.78,
+          0x82c767,
+          data.x,
+          data.top + 0.04,
+          0
+        );
+
+        data.grass = grass;
+      }
+
+      if (data.type === "hot") {
+        mesh.material.emissive.set(0xff2a00);
+        mesh.material.emissiveIntensity = 0.5;
+
+        const hotLight = new THREE.PointLight(0xff5722, 2.5, 5);
+        hotLight.position.set(data.x, 1.1, 1);
+        scene.add(hotLight);
+      }
+
+      if (data.type === "cold") {
+        mesh.material.metalness = 0.15;
+        mesh.material.roughness = 0.2;
+
+        const coldLight = new THREE.PointLight(0x63ddff, 2, 5);
+        coldLight.position.set(data.x, 1.2, 1);
+        scene.add(coldLight);
+      }
+
+      return {
+        ...data,
+        mesh
+      };
+    });
+
+    /* ---------------------------------
+       شخصية القطرة
+    ---------------------------------- */
+
+    function createDropCharacter() {
+      const group = new THREE.Group();
+
+      const waterMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x29c8f0,
+        roughness: 0.12,
+        metalness: 0.05,
+        transparent: true,
+        opacity: 0.9,
+        transmission: 0.12,
+        thickness: 0.8,
+        clearcoat: 1,
+        clearcoatRoughness: 0.1
+      });
+
+      const body = new THREE.Mesh(
+        new THREE.SphereGeometry(0.46, 32, 24),
+        waterMaterial
+      );
+
+      body.scale.set(0.9, 1, 0.9);
+      body.castShadow = true;
+      group.add(body);
+
+      const top = new THREE.Mesh(
+        new THREE.ConeGeometry(0.29, 0.62, 32),
+        waterMaterial
+      );
+
+      top.position.y = 0.45;
+      top.castShadow = true;
+      group.add(top);
+
+      const eyeMaterial = material(0x08283b, {
+        roughness: 0.45
+      });
+
+      const leftEye = new THREE.Mesh(
+        new THREE.SphereGeometry(0.055, 16, 12),
+        eyeMaterial
+      );
+
+      const rightEye = leftEye.clone();
+
+      leftEye.position.set(-0.14, 0.07, 0.42);
+      rightEye.position.set(0.14, 0.07, 0.42);
+
+      group.add(leftEye, rightEye);
+
+      const highlight = new THREE.Mesh(
+        new THREE.SphereGeometry(0.09, 16, 12),
+        material(0xffffff, {
+          transparent: true,
+          opacity: 0.75,
+          roughness: 0.1
+        })
+      );
+
+      highlight.position.set(-0.18, 0.23, 0.34);
+      group.add(highlight);
+
+      scene.add(group);
+
+      return {
+        group,
+        body,
+        top,
+        waterMaterial
+      };
+    }
+
+    const playerVisual = createDropCharacter();
+
+    const player = {
+      x: -8.1,
+      y: 0.48,
+      vx: 0,
+      vy: 0,
+      radius: 0.46,
+      water: 60,
+      state: "سائلة",
+      stateTimer: 0,
+      onGround: false,
+      jumpLocked: false
+    };
+
+    /* ---------------------------------
+       قطرات الماء
+    ---------------------------------- */
+
+    function createCollectibleDrop(x, y) {
+      const group = new THREE.Group();
+
+      const dropMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0x55ddff,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.86,
+        transmission: 0.22,
+        clearcoat: 1,
+        emissive: 0x0088bb,
+        emissiveIntensity: 0.18
+      });
+
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 24, 18),
+        dropMaterial
+      );
+
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.13, 0.3, 24),
+        dropMaterial
+      );
+
+      cone.position.y = 0.2;
+
+      group.add(sphere, cone);
+      group.position.set(x, y, 0);
+      group.traverse((part) => {
+        if (part.isMesh) part.castShadow = true;
+      });
+
+      scene.add(group);
+
+      return {
+        x,
+        y,
+        baseY: y,
+        taken: false,
+        group
+      };
+    }
+
+    const collectibleDrops = [
+      createCollectibleDrop(-5.8, 2.25),
+      createCollectibleDrop(-1.8, 3.72),
+      createCollectibleDrop(3.2, 2.08),
+      createCollectibleDrop(6.8, 4.38)
+    ];
+
+    /* ---------------------------------
+       النباتات
+    ---------------------------------- */
+
+    function createPlant(x) {
+      const group = new THREE.Group();
+
+      const pot = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3, 0.23, 0.46, 20),
+        material(0xa45e37)
+      );
+
+      pot.position.y = 0.23;
+      pot.castShadow = true;
+      group.add(pot);
+
+      const soil = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.24, 0.06, 20),
+        material(0x493322)
+      );
+
+      soil.position.y = 0.47;
+      group.add(soil);
+
+      const stemMaterial = material(0x8b6a42);
+
+      const stem = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.055, 0.07, 0.67, 12),
+        stemMaterial
+      );
+
+      stem.position.y = 0.78;
+      stem.castShadow = true;
+      group.add(stem);
+
+      const leavesMaterial = material(0x8a6945);
+
+      const leaves = [];
+
+      [
+        [-0.2, 1.04, 0],
+        [0.19, 1.08, 0.03],
+        [0, 1.28, 0]
+      ].forEach(([lx, ly, lz], index) => {
+        const leaf = new THREE.Mesh(
+          new THREE.SphereGeometry(
+            index === 2 ? 0.27 : 0.22,
+            18,
+            14
+          ),
+          leavesMaterial
+        );
+
+        leaf.scale.set(1.2, 0.75, 0.8);
+        leaf.position.set(lx, ly, lz);
+        leaf.castShadow = true;
+
+        group.add(leaf);
+        leaves.push(leaf);
+      });
+
+      group.position.set(x, 0, 0.15);
+      scene.add(group);
+
+      return {
+        x,
+        y: 0.65,
+        watered: false,
+        group,
+        leavesMaterial,
+        leaves
+      };
+    }
+
+    const plants = [
+      createPlant(-3.6),
+      createPlant(1.5),
+      createPlant(8)
+    ];
+
+    function waterPlant(plant) {
+      plant.watered = true;
+      plant.leavesMaterial.color.set(0x35b856);
+      plant.leavesMaterial.roughness = 0.45;
+
+      plant.group.scale.set(1, 1.08, 1);
+      createParticles(plant.x, 0.9, 0x58e4ff, 12);
+
+      playSound(520, 0.13, "sine");
+      showMessage("🌱 أحسنت! تم سقي نبتة");
+    }
+
+    /* ---------------------------------
+       المخاطر
+    ---------------------------------- */
+
+    const hazards = [];
+
+    function createSponge(x) {
+      const sponge = createBox(
+        1.4,
+        0.58,
+        1.55,
+        0xd6a244,
+        x,
+        0.29,
+        0.05
+      );
+
+      for (let i = 0; i < 10; i++) {
+        const hole = new THREE.Mesh(
+          new THREE.SphereGeometry(0.07, 10, 8),
+          material(0x8b641d)
+        );
+
+        hole.position.set(
+          x - 0.55 + Math.random() * 1.1,
+          0.15 + Math.random() * 0.3,
+          0.84
+        );
+
+        scene.add(hole);
+      }
+
+      hazards.push({
+        x,
+        width: 1.4,
+        height: 0.8,
+        type: "sponge",
+        mesh: sponge
+      });
+    }
+
+    function createMud(x) {
+      const mud = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.75, 0.9, 0.18, 28),
+        material(0x745235, {
+          roughness: 1
+        })
+      );
+
+      mud.position.set(x, 0.08, 0.25);
+      mud.scale.z = 0.7;
+      mud.receiveShadow = true;
+      scene.add(mud);
+
+      hazards.push({
+        x,
+        width: 1.5,
+        height: 0.45,
+        type: "dirt",
+        mesh: mud
+      });
+    }
+
+    function createChemicalBarrel(x) {
+      const barrel = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.42, 0.42, 0.72, 24),
+        material(0x783bb3, {
+          metalness: 0.25,
+          roughness: 0.35,
+          emissive: 0x2b0048,
+          emissiveIntensity: 0.25
+        })
+      );
+
+      barrel.rotation.z = Math.PI / 2;
+      barrel.position.set(x, 0.38, 0);
+      barrel.castShadow = true;
+      scene.add(barrel);
+
+      const stripe = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.425, 0.425, 0.13, 24),
+        material(0xb576ee)
+      );
+
+      stripe.rotation.z = Math.PI / 2;
+      stripe.position.copy(barrel.position);
+      scene.add(stripe);
+
+      const chemicalLight = new THREE.PointLight(
+        0xa257ff,
+        1.4,
+        3
+      );
+
+      chemicalLight.position.set(x, 0.9, 0.7);
+      scene.add(chemicalLight);
+
+      hazards.push({
+        x,
+        width: 1.2,
+        height: 0.9,
+        type: "chemical",
+        mesh: barrel
+      });
+    }
+
+    createSponge(-3.35);
+    createMud(1.5);
+    createChemicalBarrel(7.2);
+
+    /* ---------------------------------
+       خزان النهاية
+    ---------------------------------- */
+
+    const goalGroup = new THREE.Group();
+
+    const tankMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x2698bd,
+      roughness: 0.18,
+      metalness: 0.5,
+      clearcoat: 0.8
+    });
+
+    const tank = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.58, 0.58, 1.6, 32),
+      tankMaterial
+    );
+
+    tank.position.y = 0.8;
+    tank.castShadow = true;
+    goalGroup.add(tank);
+
+    const tankTop = new THREE.Mesh(
+      new THREE.SphereGeometry(0.58, 24, 12),
+      tankMaterial
+    );
+
+    tankTop.scale.y = 0.32;
+    tankTop.position.y = 1.6;
+    goalGroup.add(tankTop);
+
+    const pipe = new THREE.Mesh(
+      new THREE.TorusGeometry(0.34, 0.09, 12, 30, Math.PI),
+      material(0xbcecf4, {
+        metalness: 0.65,
+        roughness: 0.25
+      })
+    );
+
+    pipe.rotation.z = Math.PI / 2;
+    pipe.position.set(-0.44, 0.9, 0);
+    goalGroup.add(pipe);
+
+    const goalLight = new THREE.PointLight(0x45e5ff, 2, 5);
+    goalLight.position.set(0, 1.6, 1);
+    goalGroup.add(goalLight);
+
+    goalGroup.position.set(8.45, 3.7, 0);
+    scene.add(goalGroup);
+
+    /* ---------------------------------
+       الجزيئات
+    ---------------------------------- */
+
+    const particles = [];
+
+    function createParticles(x, y, color = 0x58e5ff, amount = 10) {
+      for (let i = 0; i < amount; i++) {
+        const mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(0.045 + Math.random() * 0.035, 8, 6),
+          new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: 1
+          })
+        );
+
+        mesh.position.set(x, y, (Math.random() - 0.5) * 0.6);
+        scene.add(mesh);
+
+        particles.push({
+          mesh,
+          vx: (Math.random() - 0.5) * 3,
+          vy: 1.5 + Math.random() * 3,
+          vz: (Math.random() - 0.5) * 2,
+          life: 0.7 + Math.random() * 0.5
+        });
+      }
+    }
+
+    function updateParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const particle = particles[i];
+
+        particle.life -= dt;
+        particle.vy -= 5 * dt;
+
+        particle.mesh.position.x += particle.vx * dt;
+        particle.mesh.position.y += particle.vy * dt;
+        particle.mesh.position.z += particle.vz * dt;
+
+        particle.mesh.material.opacity = Math.max(0, particle.life);
+        particle.mesh.scale.setScalar(Math.max(0.1, particle.life));
+
+        if (particle.life <= 0) {
+          scene.remove(particle.mesh);
+          particle.mesh.geometry.dispose();
+          particle.mesh.material.dispose();
+          particles.splice(i, 1);
+        }
+      }
+    }
+
+    /* ---------------------------------
+       التحكم
+    ---------------------------------- */
+
+    const controls = {
+      left: false,
+      right: false,
+      jump: false
+    };
+
+    const blockedKeys = [
+      "arrowleft",
+      "arrowright",
+      "arrowup",
+      " "
+    ];
+
+    addEventListener("keydown", (event) => {
+      const key = event.key.toLowerCase();
+
+      if (blockedKeys.includes(key)) {
+        event.preventDefault();
+      }
+
+      if (key === "arrowleft" || key === "a") {
+        controls.left = true;
+      }
+
+      if (key === "arrowright" || key === "d") {
+        controls.right = true;
+      }
+
+      if (
+        key === "arrowup" ||
+        key === "w" ||
+        key === " "
+      ) {
+        controls.jump = true;
+      }
+    });
+
+    addEventListener("keyup", (event) => {
+      const key = event.key.toLowerCase();
+
+      if (key === "arrowleft" || key === "a") {
+        controls.left = false;
+      }
+
+      if (key === "arrowright" || key === "d") {
+        controls.right = false;
+      }
+
+      if (
+        key === "arrowup" ||
+        key === "w" ||
+        key === " "
+      ) {
+        controls.jump = false;
+      }
+    });
+
+    function connectTouchButton(id, controlName) {
+      const button = document.getElementById(id);
+
+      const activate = (event) => {
+        event.preventDefault();
+        button.setPointerCapture?.(event.pointerId);
+        controls[controlName] = true;
+        button.classList.add("active");
+
+        if (!audioContext) initializeAudio();
+      };
+
+      const deactivate = (event) => {
+        event.preventDefault();
+        controls[controlName] = false;
+        button.classList.remove("active");
+      };
+
+      button.addEventListener("pointerdown", activate);
+      button.addEventListener("pointerup", deactivate);
+      button.addEventListener("pointercancel", deactivate);
+      button.addEventListener("lostpointercapture", deactivate);
+    }
+
+    connectTouchButton("leftButton", "left");
+    connectTouchButton("rightButton", "right");
+    connectTouchButton("jumpButton", "jump");
+
+    /* ---------------------------------
+       الأصوات
+    ---------------------------------- */
+
+    function initializeAudio() {
+      if (!audioContext) {
+        audioContext = new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+      }
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+    }
+
+    function playSound(
+      frequency = 440,
+      duration = 0.12,
+      type = "sine"
+    ) {
+      if (!soundEnabled) return;
+
+      initializeAudio();
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        audioContext.currentTime
+      );
+
+      gain.gain.setValueAtTime(
+        0.11,
+        audioContext.currentTime
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+      );
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    soundButton.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundButton.textContent = soundEnabled ? "🔊" : "🔇";
+
+      if (soundEnabled) {
+        playSound(500, 0.08);
+      }
+    });
+
+    /* ---------------------------------
+       رسائل اللعبة
+    ---------------------------------- */
+
+    function showMessage(text, duration = 1700) {
+      clearTimeout(messageTimer);
+
+      messageElement.textContent = text;
+      messageElement.classList.add("show");
+
+      messageTimer = setTimeout(() => {
+        messageElement.classList.remove("show");
+      }, duration);
+    }
+
+    /* ---------------------------------
+       تحديث حالة القطرة
+    ---------------------------------- */
+
+    function setPlayerState(state, duration) {
+      player.state = state;
+      player.stateTimer = duration;
+
+      if (state === "بخارية") {
+        playerVisual.waterMaterial.color.set(0xe8fbff);
+        playerVisual.waterMaterial.opacity = 0.62;
+        showMessage("🔥 أصبحت بخارًا: الجاذبية أخف");
+      }
+
+      if (state === "متجمدة") {
+        playerVisual.waterMaterial.color.set(0xc9fbff);
+        playerVisual.waterMaterial.opacity = 0.96;
+        showMessage("❄️ أصبحت متجمدة: قفزتك أقوى");
+      }
+    }
+
+    function restoreLiquidState() {
+      player.state = "سائلة";
+      playerVisual.waterMaterial.color.set(0x29c8f0);
+      playerVisual.waterMaterial.opacity = 0.9;
+    }
+
+    /* ---------------------------------
+       تحديث اللعبة
+    ---------------------------------- */
+
+    function updateGame(dt) {
+      if (!started || gameEnded) return;
+
+      const acceleration = 18;
+      const maxSpeed = 5.7;
+
+      if (controls.left) {
+        player.vx -= acceleration * dt;
+      }
+
+      if (controls.right) {
+        player.vx += acceleration * dt;
+      }
+
+      if (!controls.left && !controls.right) {
+        player.vx *= Math.pow(0.002, dt);
+      } else {
+        player.vx *= Math.pow(0.16, dt);
+      }
+
+      player.vx = THREE.MathUtils.clamp(
+        player.vx,
+        -maxSpeed,
+        maxSpeed
+      );
+
+      if (
+        controls.jump &&
+        !player.jumpLocked &&
+        player.onGround
+      ) {
+        player.vy =
+          player.state === "متجمدة" ? 10.4 : 8.4;
+
+        player.onGround = false;
+        playSound(320, 0.1, "square");
+        createParticles(player.x, player.y - 0.35, 0xffffff, 5);
+      }
+
+      player.jumpLocked = controls.jump;
+
+      if (player.stateTimer > 0) {
+        player.stateTimer -= dt;
+
+        if (player.state === "بخارية") {
+          player.water -= 2.3 * dt;
+        }
+
+        if (player.stateTimer <= 0) {
+          restoreLiquidState();
+        }
+      }
+
+      const gravity =
+        player.state === "بخارية" ? -6.5 : -19;
+
+      player.vy += gravity * dt;
+      player.vy = Math.max(player.vy, -15);
+
+      const oldY = player.y;
+      const oldBottom = oldY - player.radius;
+
+      player.x += player.vx * dt;
+      player.y += player.vy * dt;
+
+      player.x = THREE.MathUtils.clamp(
+        player.x,
+        -9.2,
+        9.3
+      );
+
+      const newBottom = player.y - player.radius;
+      let landingPlatform = null;
+
+      if (player.vy <= 0) {
+        for (const platform of platforms) {
+          const insideX =
+            player.x + player.radius * 0.7 >
+              platform.x - platform.width / 2 &&
+            player.x - player.radius * 0.7 <
+              platform.x + platform.width / 2;
+
+          const crossedTop =
+            oldBottom >= platform.top - 0.05 &&
+            newBottom <= platform.top;
+
+          if (insideX && crossedTop) {
+            if (
+              !landingPlatform ||
+              platform.top > landingPlatform.top
+            ) {
+              landingPlatform = platform;
+            }
+          }
+        }
+      }
+
+      player.onGround = false;
+
+      if (landingPlatform) {
+        player.y = landingPlatform.top + player.radius;
+        player.vy = 0;
+        player.onGround = true;
+
+        if (
+          landingPlatform.type === "hot" &&
+          player.state !== "بخارية"
+        ) {
+          setPlayerState("بخارية", 2.4);
+        }
+
+        if (
+          landingPlatform.type === "cold" &&
+          player.state !== "متجمدة"
+        ) {
+          setPlayerState("متجمدة", 3.5);
+        }
+      }
+
+      updateHazards(dt);
+      updateCollectibles();
+      updatePlants();
+      checkGoal();
+
+      if (player.water <= 0) {
+        player.water = 0;
+        endGame(false, "نفد الماء من القطرة.");
+      }
+
+      if (player.y < -5) {
+        endGame(false, "سقطت القطرة خارج المسار.");
+      }
+
+      playerVisual.group.position.set(
+        player.x,
+        player.y,
+        0
+      );
+
+      const sizeScale = player.radius / 0.46;
+
+      playerVisual.group.scale.set(
+        sizeScale,
+        sizeScale,
+        sizeScale
+      );
+
+      const targetRotation =
+        controls.left ? 0.16 :
+        controls.right ? -0.16 : 0;
+
+      playerVisual.group.rotation.z = THREE.MathUtils.lerp(
+        playerVisual.group.rotation.z,
+        targetRotation,
+        Math.min(1, dt * 8)
+      );
+
+      updateHUD();
+    }
+
+    function updateHazards(dt) {
+      for (const hazard of hazards) {
+        const closeX =
+          Math.abs(player.x - hazard.x) <
+          hazard.width / 2 + player.radius * 0.65;
+
+        const nearGround =
+          player.y - player.radius < hazard.height;
+
+        if (!closeX || !nearGround) continue;
+
+        if (hazard.type === "sponge") {
+          player.water -= 12 * dt;
+          player.vx *= Math.pow(0.35, dt);
+        }
+
+        if (hazard.type === "dirt") {
+          player.vx *= Math.pow(0.015, dt);
+        }
+
+        if (hazard.type === "chemical") {
+          player.water -= 4.2 * dt;
+          player.vx *= Math.pow(0.08, dt);
+        }
+      }
+    }
+
+    function updateCollectibles() {
+      collectibleDrops.forEach((drop) => {
+        if (drop.taken) return;
+
+        const distance = Math.hypot(
+          player.x - drop.x,
+          player.y - drop.y
+        );
+
+        if (distance < player.radius + 0.38) {
+          drop.taken = true;
+          drop.group.visible = false;
+
+          player.water = Math.min(
+            100,
+            player.water + 18
+          );
+
+          player.radius = Math.min(
+            0.61,
+            player.radius + 0.035
+          );
+
+          createParticles(drop.x, drop.y, 0x68ecff, 16);
+          playSound(720, 0.13, "sine");
+          showMessage("💧 جمعت قطرة ماء");
+        }
+      });
+    }
+
+    function updatePlants() {
+      for (const plant of plants) {
+        if (plant.watered) continue;
+
+        const distance = Math.hypot(
+          player.x - plant.x,
+          player.y - plant.y
+        );
+
+        if (distance < 1.05 && player.water >= 8) {
+          player.water -= 8;
+          waterPlant(plant);
+        }
+      }
+    }
+
+    function checkGoal() {
+      const allPlantsWatered = plants.every(
+        (plant) => plant.watered
+      );
+
+      const closeToGoal =
+        Math.abs(player.x - 8.45) < 0.85 &&
+        player.y > 3.65;
+
+      if (!closeToGoal) return;
+
+      if (allPlantsWatered) {
+        endGame(true);
+      } else {
+        showMessage("🌱 اسقِ النباتات الثلاثة أولًا");
+      }
+    }
+
+    /* ---------------------------------
+       واجهة البيانات
+    ---------------------------------- */
+
+    function updateHUD() {
+      const waterValue = Math.round(
+        THREE.MathUtils.clamp(player.water, 0, 100)
+      );
+
+      waterElement.textContent = `${waterValue}%`;
+      waterFill.style.width = `${waterValue}%`;
+
+      if (waterValue <= 25) {
+        waterFill.style.background =
+          "linear-gradient(90deg,#ff4f43,#ffab4a)";
+      } else {
+        waterFill.style.background =
+          "linear-gradient(90deg,#00a9ff,#62efff)";
+      }
+
+      plantsElement.textContent =
+        plants.filter((plant) => plant.watered).length;
+
+      dropsElement.textContent =
+        collectibleDrops.filter((drop) => drop.taken).length;
+
+      stateElement.textContent = player.state;
+    }
+
+    /* ---------------------------------
+       الفوز والخسارة
+    ---------------------------------- */
+
+    function endGame(won, reason = "") {
+      if (gameEnded) return;
+
+      gameEnded = true;
+
+      if (won) {
+        playSound(650, 0.18, "sine");
+
+        setTimeout(() => {
+          playSound(820, 0.22, "sine");
+        }, 140);
+
+        createParticles(
+          player.x,
+          player.y,
+          0xffdc55,
+          35
+        );
+
+        overlayTitle.textContent = "🎉 أنقذت الحديقة!";
+        overlayText.innerHTML =
+          `وصلت إلى خزان المياه بعد سقي النباتات الثلاثة.
+           <br>الماء المتبقي:
+           <b>${Math.round(player.water)}%</b>`;
+      } else {
+        playSound(130, 0.4, "sawtooth");
+
+        overlayTitle.textContent = "💧 انتهت الرحلة";
+        overlayText.textContent =
+          reason || "حاول مرة أخرى.";
+      }
+
+      startButton.textContent = "إعادة اللعب";
+
+      setTimeout(() => {
+        overlay.classList.remove("hidden");
+      }, 700);
+    }
+
+    function resetGame() {
+      gameEnded = false;
+
+      player.x = -8.1;
+      player.y = 0.48;
+      player.vx = 0;
+      player.vy = 0;
+      player.radius = 0.46;
+      player.water = 60;
+      player.stateTimer = 0;
+      player.onGround = false;
+      player.jumpLocked = false;
+
+      restoreLiquidState();
+
+      controls.left = false;
+      controls.right = false;
+      controls.jump = false;
+
+      collectibleDrops.forEach((drop) => {
+        drop.taken = false;
+        drop.group.visible = true;
+      });
+
+      plants.forEach((plant) => {
+        plant.watered = false;
+        plant.leavesMaterial.color.set(0x8a6945);
+        plant.group.scale.set(1, 1, 1);
+      });
+
+      playerVisual.group.position.set(
+        player.x,
+        player.y,
+        0
+      );
+
+      playerVisual.group.scale.set(1, 1, 1);
+
+      updateHUD();
+    }
+
+    startButton.addEventListener("click", () => {
+      initializeAudio();
+
+      if (gameEnded) {
+        resetGame();
+      }
+
+      started = true;
+      overlay.classList.add("hidden");
+      showMessage("اجمع القطرات واسقِ النباتات 🌱");
+    });
+
+    /* ---------------------------------
+       الحركة البصرية والكاميرا
+    ---------------------------------- */
+
+    function updateVisuals(time, dt) {
+      const seconds = time * 0.001;
+
+      collectibleDrops.forEach((drop, index) => {
+        if (drop.taken) return;
+
+        drop.group.position.y =
+          drop.baseY +
+          Math.sin(seconds * 2.3 + index) * 0.1;
+
+        drop.group.rotation.y += dt * 1.5;
+      });
+
+      clouds.forEach((cloud, index) => {
+        cloud.position.x += dt * (0.06 + index * 0.015);
+
+        if (cloud.position.x > 14) {
+          cloud.position.x = -14;
+        }
+      });
+
+      goalGroup.rotation.y =
+        Math.sin(seconds * 0.8) * 0.08;
+
+      const cameraTargetX = THREE.MathUtils.clamp(
+        player.x,
+        -6.4,
+        6.4
+      );
+
+      camera.position.x = THREE.MathUtils.lerp(
+        camera.position.x,
+        cameraTargetX,
+        Math.min(1, dt * 2.5)
+      );
+
+      const targetY = THREE.MathUtils.clamp(
+        player.y + 2.2,
+        4.4,
+        6.4
+      );
+
+      camera.position.y = THREE.MathUtils.lerp(
+        camera.position.y,
+        targetY,
+        Math.min(1, dt * 2)
+      );
+
+      camera.lookAt(
+        camera.position.x,
+        camera.position.y - 1.35,
+        0
+      );
+    }
+
+    /* ---------------------------------
+       تغيير حجم الشاشة
+    ---------------------------------- */
+
+    function resize() {
+      camera.aspect = innerWidth / innerHeight;
+
+      if (innerWidth < 600) {
+        camera.fov = 61;
+        camera.position.z = 15.5;
+      } else {
+        camera.fov = 50;
+        camera.position.z = 14;
+      }
+
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(
+        Math.min(devicePixelRatio, 2)
+      );
+    }
+
+    addEventListener("resize", resize);
+    resize();
+
+    /* ---------------------------------
+       حلقة التشغيل
+    ---------------------------------- */
+
+    const clock = new THREE.Clock();
+
+    function animate(time) {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.033);
+
+      updateGame(dt);
+      updateParticles(dt);
+      updateVisuals(time, dt);
+
+      renderer.render(scene, camera);
+    }
+
+    playerVisual.group.position.set(
+      player.x,
+      player.y,
+      0
+    );
+
+    updateHUD();
+    requestAnimationFrame(animate);
+  </script>
 </body>
 </html>
