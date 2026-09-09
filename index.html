@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>قطرة: رحلة العودة</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#101827;color:white;font-family:Arial,sans-serif;
+  display:flex;justify-content:center;align-items:center;min-height:100vh;
+}
+main{width:min(1000px,100%);padding:12px;text-align:center}
+h1{margin:4px 0 8px;color:#75e6ff}
+#info{display:flex;justify-content:space-around;gap:8px;flex-wrap:wrap;
+  background:#1c2940;padding:8px;border-radius:12px;margin-bottom:8px}
+canvas{width:100%;height:auto;background:#a9e4f6;border:3px solid #526b85;
+  border-radius:14px;display:block;touch-action:none}
+p{margin:8px;color:#c8d8e8}
+button{background:#267fa2;color:white;border:0;padding:10px 18px;
+  border-radius:8px;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>💧 قطرة: رحلة العودة</h1>
+<div id="info">
+  <span>الماء: <b id="water">60</b>%</span>
+  <span>النباتات: <b id="plants">0</b>/3</span>
+  <span>الحالة: <b id="state">سائلة</b></span>
+  <span>التحكم: ← → أو A D — القفز Space</span>
+</div>
+<canvas id="game" width="960" height="540"></canvas>
+<p>اجمع القطرات، اسقِ النباتات، وتجنب الإسفنج والحرارة للوصول إلى الخزان.</p>
+<button onclick="location.reload()">إعادة اللعب</button>
+</main>
+
+<script>
+const c=document.getElementById("game"),ctx=c.getContext("2d");
+const W=c.width,H=c.height;
+const keys={};
+addEventListener("keydown",e=>{
+  keys[e.key.toLowerCase()]=true;
+  if([" ","arrowleft","arrowright","arrowup"].includes(e.key.toLowerCase()))
+    e.preventDefault();
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+const player={
+ x:70,y:420,vx:0,vy:0,r:23,water:60,
+ onGround:false,state:"سائلة",jumpLock:false
+};
+
+const platforms=[
+ {x:0,y:500,w:960,h:40,type:"ground"},
+ {x:120,y:420,w:150,h:18},
+ {x:340,y:350,w:160,h:18},
+ {x:590,y:430,w:140,h:18},
+ {x:770,y:315,w:135,h:18},
+ {x:430,y:475,w:90,h:25,type:"hot"},
+ {x:700,y:475,w:100,h:25,type:"cold"}
+];
+
+const drops=[
+ {x:190,y:385,taken:false},{x:390,y:315,taken:false},
+ {x:640,y:395,taken:false},{x:820,y:280,taken:false}
+];
+
+const plants=[
+ {x:300,y:476,watered:false},
+ {x:555,y:476,watered:false},
+ {x:880,y:476,watered:false}
+];
+
+const hazards=[
+ {x:275,y:465,w:75,h:35,type:"sponge"},
+ {x:520,y:465,w:70,h:35,type:"dirt"},
+ {x:800,y:465,w:80,h:35,type:"chemical"}
+];
+
+const goal={x:900,y:230,w:45,h:85};
+let won=false,dead=false,last=0;
+
+function rectHit(a,b){
+ return a.x+a.w>b.x && a.x<b.x+b.w &&
+        a.y+a.h>b.y && a.y<b.y+b.h;
+}
+function playerBox(){
+ return {x:player.x-player.r,y:player.y-player.r,
+         w:player.r*2,h:player.r*2};
+}
+function reset(){
+ player.x=70;player.y=420;player.vx=0;player.vy=0;
+ player.water=60;player.state="سائلة";won=false;dead=false;
+ plants.forEach(p=>p.watered=false);
+ drops.forEach(d=>d.taken=false);
+}
+
+function update(dt){
+ if(won||dead)return;
+
+ let left=keys["arrowleft"]||keys["a"];
+ let right=keys["arrowright"]||keys["d"];
+ let jump=keys[" "]||keys["arrowup"]||keys["w"];
+
+ if(left)player.vx-=0.55;
+ if(right)player.vx+=0.55;
+ player.vx*=0.88;
+ player.vx=Math.max(-6,Math.min(6,player.vx));
+
+ if(jump&&!player.jumpLock&&player.onGround){
+   player.vy=player.state==="متجمدة"?-13:-11;
+   player.onGround=false;
+ }
+ player.jumpLock=jump;
+
+ let gravity=player.state==="بخارية"?0.12:0.55;
+ player.vy+=gravity;
+ player.vy=Math.min(player.vy,14);
+
+ let oldY=player.y;
+ player.x+=player.vx;
+ player.y+=player.vy;
+ player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+
+ player.onGround=false;
+
+ for(const p of platforms){
+   const box=playerBox();
+   if(rectHit(box,p) && player.vy>=0 && oldY+player.r<=p.y+8){
+     player.y=p.y-player.r;
+     player.vy=0;
+     player.onGround=true;
+   }
+ }
+
+ if(player.y>H+80){dead=true;return}
+
+ player.state="سائلة";
+
+ for(const p of platforms){
+   if(p.type==="hot" &&
+      player.x>p.x-player.r&&player.x<p.x+p.w+player.r &&
+      player.y+player.r>p.y){
+     player.state="بخارية";
+     player.water-=0.10*dt;
+   }
+   if(p.type==="cold" &&
+      player.x>p.x-player.r&&player.x<p.x+p.w+player.r &&
+      player.y+player.r>p.y){
+     player.state="متجمدة";
+   }
+ }
+
+ for(const h of hazards){
+   if(rectHit(playerBox(),h)){
+     if(h.type==="sponge")player.water-=0.35*dt;
+     if(h.type==="chemical"){player.vx*=0.92;player.water-=0.04*dt}
+     if(h.type==="dirt"){player.vx*=0.96}
+   }
+ }
+
+ for(const d of drops){
+   if(!d.taken && Math.hypot(player.x-d.x,player.y-d.y)<player.r+12){
+     d.taken=true;
+     player.water=Math.min(100,player.water+18);
+     player.r=Math.min(32,player.r+2);
+   }
+ }
+
+ for(const p of plants){
+   if(!p.watered && Math.hypot(player.x-p.x,player.y-p.y)<48 && player.water>8){
+     p.watered=true;
+     player.water-=8;
+   }
+ }
+
+ if(player.water<=0){dead=true;player.water=0}
+ if(player.x>goal.x-20&&player.y<goal.y+goal.h&&
+    plants.every(p=>p.watered)) won=true;
+}
+
+function draw(){
+ ctx.clearRect(0,0,W,H);
+
+ // السماء
+ let sky=ctx.createLinearGradient(0,0,0,H);
+ sky.addColorStop(0,"#83d8f2");sky.addColorStop(1,"#d7f6de");
+ ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+
+ // سحب
+ ctx.fillStyle="rgba(255,255,255,.65)";
+ [[120,70],[450,95],[760,55]].forEach(([x,y])=>{
+   ctx.beginPath();ctx.arc(x,y,25,0,Math.PI*2);
+   ctx.arc(x+28,y+5,32,0,Math.PI*2);
+   ctx.arc(x+62,y,22,0,Math.PI*2);ctx.fill();
+ });
+
+ // المنصات
+ for(const p of platforms){
+   ctx.fillStyle=p.type==="hot"?"#ef684d":
+                p.type==="cold"?"#8bdcf7":
+                "#5b9b57";
+   ctx.fillRect(p.x,p.y,p.w,p.h);
+   if(p.type==="hot"){
+     ctx.fillStyle="#ffb13b";
+     for(let x=p.x+10;x<p.x+p.w;x+=22)ctx.fillText("🔥",x,p.y-4);
+   }
+   if(p.type==="cold"){
+     ctx.fillStyle="#eaffff";
+     for(let x=p.x+10;x<p.x+p.w;x+=25)ctx.fillText("❄",x,p.y+18);
+   }
+ }
+
+ // المخاطر
+ for(const h of hazards){
+   ctx.fillStyle=h.type==="sponge"?"#d493bd":
+                h.type==="chemical"?"#8d55c7":"#806447";
+   ctx.fillRect(h.x,h.y,h.w,h.h);
+   ctx.fillStyle="white";
+   ctx.font="20px Arial";
+   ctx.fillText(h.type==="sponge"?"🧽":h.type==="chemical"?"☣":"●",
+                h.x+22,h.y+25);
+ }
+
+ // القطرات
+ for(const d of drops)if(!d.taken){
+   ctx.fillStyle="#65e5ff";ctx.beginPath();
+   ctx.arc(d.x,d.y,11,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle="white";ctx.stroke();
+ }
+
+ // النباتات
+ for(const p of plants){
+   ctx.font="30px Arial";
+   ctx.fillText(p.watered?"🌳":"🥀",p.x-15,p.y+5);
+ }
+
+ // الهدف
+ ctx.fillStyle="#247b9d";ctx.fillRect(goal.x,goal.y,goal.w,goal.h);
+ ctx.fillStyle="#d8f7ff";ctx.font="25px Arial";ctx.fillText("🚰",goal.x+7,goal.y+30);
+
+ // القطرة
+ ctx.save();
+ ctx.translate(player.x,player.y);
+ let sx=1,sy=1;
+ if(player.state==="بخارية"){sx=1.25;sy=.75}
+ if(player.state==="متجمدة"){sx=1.05;sy=1.05}
+ ctx.scale(sx,sy);
+ ctx.fillStyle=player.state==="متجمدة"?"#d7ffff":
+              player.state==="بخارية"?"rgba(255,255,255,.72)":"#39c9ed";
+ ctx.beginPath();ctx.arc(0,0,player.r,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#fff";ctx.lineWidth=3;ctx.stroke();
+ ctx.fillStyle="#123";ctx.beginPath();ctx.arc(-7,-4,3,0,7);ctx.arc(7,-4,3,0,7);ctx.fill();
+ ctx.restore();
+
+ if(won||dead){
+   ctx.fillStyle="rgba(8,18,35,.78)";ctx.fillRect(0,0,W,H);
+   ctx.textAlign="center";
+   ctx.fillStyle="white";ctx.font="bold 38px Arial";
+   ctx.fillText(won?"🎉 أنقذت الحديقة!":"💧 نفد الماء",W/2,230);
+   ctx.font="22px Arial";
+   ctx.fillText(won?"وصلت إلى مصدر المياه الرئيسي":"اضغط زر إعادة اللعب للمحاولة مجددًا",
+                W/2,275);
+   ctx.textAlign="start";
+ }
+ document.getElementById("water").textContent=Math.round(player.water);
+ document.getElementById("plants").textContent=plants.filter(p=>p.watered).length;
+ document.getElementById("state").textContent=player.state;
+}
+
+function loop(t){
+ let dt=Math.min(2,(t-last)/16.67||1);last=t;
+ update(dt);draw();requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
